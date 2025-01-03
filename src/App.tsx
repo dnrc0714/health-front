@@ -8,6 +8,7 @@ export default function App() {
     const [email, setEmail] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const API_URL = process.env.REACT_APP_API_URL;
 
     // 폼 제출 핸들러
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -21,10 +22,10 @@ export default function App() {
 
         try {
             // POST 요청으로 백엔드 API 호출
-            const response = await axios.post('http://localhost:8080/auth/register', {
-                username,
-                password,
-                email
+            const response = await axios.post('/auth/register', {
+                username: username,
+                password: password,
+                email: email
             });
 
             // 성공 메시지
