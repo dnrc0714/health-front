@@ -1,22 +1,44 @@
 import React, {useState, useEffect} from "react";
 import {useNavigate} from "react-router-dom";
+import axios, {AxiosError} from "axios";
+import {useResetRecoilState} from "recoil";
+import {authState} from "../utils/recoil/atoms";
 
-export default function Header() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
     const navigate = useNavigate();
+    const logoutState = useResetRecoilState(authState);
 
-    useEffect(() => {
-        const token = localStorage.getItem('accessToken');
-        setIsLoggedIn(!!token);
-    }, []);
+    const handleLogout = async () => {
+        try {
+            const refreshToken = localStorage.getItem('refreshToken');
 
-    const handleLogout = () => {
-        // 로그아웃 처리
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        setIsLoggedIn(false);
-        navigate('/login');
+            if (!refreshToken) {
+                console.error('No refreshToken found in localStorage.');
+                return;
+            }
+
+            // 서버에 로그아웃 요청
+            const response = await axios.post(
+                '/auth/logout',
+                {}, // 빈 요청 본문
+                {
+                    headers: {
+                        Authorization: `Bearer ${refreshToken}`, // Authorization 헤더에 refreshToken 추가
+                    },
+                }
+            )
+            alert(response.data); // "로그아웃 되었습니다."
+
+            // 클라이언트 측 토큰 제거
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            logoutState();
+
+            navigate('/login'); // 로그인 페이지로 이동
+        } catch (err) {
+            const error = err as AxiosError; // 타입 단언
+            alert('로그아웃 실패:' + error.response?.data || error.message);
+        }
     };
 
     const handleNavigate = (path: string) => {
