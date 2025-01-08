@@ -46,7 +46,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
     };
 
     return (
-        <header className="bg-blue-600 text-white p-4">
+        <header className="bg-blue-600 text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
             <div className="flex justify-between items-center max-w-screen-lg mx-auto">
                 <div
                     className="text-lg font-bold cursor-pointer"
@@ -56,7 +56,7 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
                 </div>
                 <div className="flex space-x-4">
                     <button
-                        onClick={() => handleNavigate('/board')}
+                        onClick={() => handleNavigate('/post')}
                         className="bg-gray-800 text-white px-4 py-2 rounded"
                     >
                         게시판

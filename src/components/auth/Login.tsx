@@ -36,7 +36,7 @@ export default function Login({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100">
             <div className="w-96 p-6 bg-white shadow-md rounded-lg">
-                <h2 className="text-2xl mb-4">HEALTH</h2>
+                <h2 className="text-2xl mb-4 text-center">HEALTH</h2>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
                 <input
                     type="text"
@@ -54,12 +54,20 @@ export default function Login({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch
                     onKeyDown={handleKeyDown}
                     className="w-full p-2 mb-3 border border-gray-300 rounded"
                 />
-                <button
-                    onClick={handleLogin}
-                    className="w-full p-2 bg-blue-500 text-white rounded"
-                >
-                    로그인
-                </button>
+                <div className="flex items-center justify-between gap-2">
+                    <button
+                        onClick={handleLogin}
+                        className="w-full p-2 bg-blue-500 text-white rounded"
+                    >
+                        로그인
+                    </button>
+                    <button
+                        onClick={() => navigate('/agreement')}
+                        className="w-full p-2 bg-pink-500 text-white rounded"
+                    >
+                        회원가입
+                    </button>
+                </div>
             </div>
         </div>
     );
