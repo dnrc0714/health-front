@@ -20,7 +20,7 @@ export default function App() {
                     <Routes>
                         <Route path="/" element={<MainContent />} />
                         <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn}/>} />
-                        <Route path="/register" element={<Register agreeYn={'Y'}/>} />
+                        <Route path="/register" element={<Register />} />
                         <Route path="/agreement" element={<Agreement />} />
                     </Routes>
                 </div>
