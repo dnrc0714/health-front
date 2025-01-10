@@ -1,11 +1,16 @@
-import React from "react";
+import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import axios, {AxiosError} from "axios";
 import {useResetRecoilState} from "recoil";
 import {authState} from "../utils/recoil/atoms";
+import {IconButton, Tooltip} from "@mui/material";
+import {AccountCircle, CalendarMonth, Forum, Login, Logout} from "@mui/icons-material";
+import Sidebar from "./Sidebar";
+import MenuIcon from "@mui/icons-material/Menu";
 
-export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
+export default function Header() {
     const navigate = useNavigate();
+    const [isSidebarOpen, setSidebarOpen] = useState(false); // 사이드바 열기/닫기 상태 관리
     const logoutState = useResetRecoilState(authState);
 
     const handleLogout = async () => {
@@ -43,55 +48,112 @@ export default function Header({ isLoggedIn }: { isLoggedIn: boolean }) {
 
     const handleNavigate = (path: string) => {
         navigate(path);
+        setSidebarOpen(false);
+    };
+
+    const handleSidebarToggle = () => {
+        setSidebarOpen(prev => !prev);
     };
 
     return (
-        <header className="bg-blue-600 text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
-            <div className="flex justify-between items-center max-w-screen-lg mx-auto">
-                <div
-                    className="text-lg font-bold cursor-pointer"
-                    onClick={() => handleNavigate('/')}
-                >
-                    Health
-                </div>
-                <div className="flex space-x-4">
-                    <button
-                        onClick={() => handleNavigate('/post')}
-                        className="bg-gray-800 text-white px-4 py-2 rounded"
-                    >
-                        게시판
-                    </button>
-                    <button
-                        onClick={() => handleNavigate('/schedule')}
-                        className="bg-gray-800 text-white px-4 py-2 rounded"
-                    >
-                        운동 일정
-                    </button>
-                    {!isLoggedIn ? (
-                        <button
-                            onClick={() => handleNavigate('/login')}
-                            className="bg-green-500 text-white px-4 py-2 rounded"
+        <header className="bg-black text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
+            <div className="flex justify-between items-center w-full max-w-screen">
+                {/* 좌측 상단: 더보기 버튼 */}
+                <div className="lg:hidden">
+                    <Tooltip title="더보기" arrow>
+                        <IconButton
+                            color="primary"
+                            onClick={handleSidebarToggle}
+                            sx={{ fontSize: '2rem' }}
                         >
-                            로그인
-                        </button>
-                    ) : (
-                        <div className="flex space-x-4">
-                            <button
+                            <MenuIcon sx={{ fontSize: 'inherit' }}/>
+                        </IconButton>
+                    </Tooltip>
+                </div>
+
+                {/* 중앙 로고: 화면 크기가 줄어들면 중앙 배치 */}
+                <div className="text-center lg:text-left">
+                    <div
+                        className="text-3xl font-bold cursor-pointer w-fit"
+                        onClick={() => handleNavigate('/')}
+                    >
+                        HEALTH
+                    </div>
+                </div>
+
+                {/* 게시판 버튼 */}
+                <div className="hidden md:flex">
+                    <Tooltip title="게시판" arrow>
+                        <IconButton
+                            color="primary"
+                            sx={{ fontSize: '2rem' }}
+                            onClick={() => handleNavigate('/post')}
+                        >
+                            <Forum sx={{ fontSize: 'inherit' }}/>
+                        </IconButton>
+                    </Tooltip>
+
+                    {/* 운동 일정 버튼 */}
+                    <Tooltip title="운동 일정" arrow>
+                        <IconButton
+                            color="primary"
+                            sx={{ fontSize: '2rem' }}
+                            onClick={() => handleNavigate('/schedule')}
+                        >
+                            <CalendarMonth sx={{ fontSize: 'inherit' }}/>
+                        </IconButton>
+                    </Tooltip>
+                </div>
+                {/* 우측 상단: 마이페이지, 로그인, 로그아웃 버튼 */}
+                <div className="flex space-x-4 items-center">
+                    {/* 마이페이지 버튼 (로그인 상태일 때만) */}
+                    {localStorage.getItem('refreshToken') ? (
+                        <Tooltip title="마이페이지" arrow>
+                            <IconButton
+                                color="primary"
+                                sx={{ fontSize: '2rem' }}
                                 onClick={() => handleNavigate('/mypage')}
-                                className="bg-gray-800 text-white px-4 py-2 rounded"
                             >
-                                마이페이지
-                            </button>
-                            <button
-                                onClick={handleLogout}
-                                className="bg-red-600 text-white px-4 py-2 rounded"
+                                <AccountCircle sx={{ fontSize: 'inherit' }}/>
+                            </IconButton>
+                        </Tooltip>
+                    ) : (
+                        <Tooltip title="로그인" arrow>
+                            <IconButton
+                                color="info"
+                                sx={{ fontSize: '2rem' }}
+                                onClick={() => handleNavigate('/login')}
                             >
-                                로그아웃
-                            </button>
+                                <Login sx={{ fontSize: 'inherit' }}/>
+                            </IconButton>
+                        </Tooltip>
+                    )}
+
+                    {/* 로그아웃 버튼 (로그인 상태일 때만) */}
+                    {localStorage.getItem('refreshToken') && (
+                        <div className="hidden md:flex">
+                            <Tooltip title="로그아웃" arrow>
+                                <IconButton
+                                    color="error"
+                                    sx={{ fontSize: '2rem' }}
+                                    onClick={handleLogout}
+                                >
+                                    <Logout sx={{ fontSize: 'inherit' }}/>
+                                </IconButton>
+                            </Tooltip>
                         </div>
                     )}
                 </div>
             </div>
+
+            {/* 사이드바 (더보기 버튼 클릭 시 열림) */}
+            <Sidebar
+                handleNavigate={handleNavigate}
+                isLoggedIn={!!localStorage.getItem('refreshToken')}
+                handleLogout={handleLogout}
+                handleSidebarToggle={handleSidebarToggle}
+                isSidebarOpen={isSidebarOpen}
+            />
         </header>
     );
 }

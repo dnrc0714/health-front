@@ -8,6 +8,7 @@ import {useRecoilState} from "recoil";
 import {authState} from "./utils/recoil/atoms";
 import Register from "./components/auth/Register";
 import Agreement from "./components/auth/Agreement";
+import PostList from "./components/post/postList";
 
 
 
@@ -16,14 +17,17 @@ export default function App() {
     return (
             <HashRouter>
                 <div className="min-h-screen bg-gray-100">
-                    <Header isLoggedIn={isLoggedIn}/>
-                    <Routes>
-                        <Route path="/" element={<MainContent />} />
-                        <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn}/>} />
-                        <Route path="/register" element={<Register />} />
-                        <Route path="/agreement" element={<Agreement />} />
-                    </Routes>
+                    <Header/>
+                    <div className="pt-16 min-h-screen bg-gray-100">
+                        <Routes>
+                            <Route path="/" element={<MainContent/>}/>
+                            <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn}/>}/>
+                            <Route path="/post" element={<PostList/>}/>
+                            <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn}/>}/>
+                            <Route path="/agreement" element={<Agreement/>}/>
+                        </Routes>
+                    </div>
                 </div>
             </HashRouter>
-    );
+);
 }

@@ -8,7 +8,7 @@ import {ko} from "date-fns/locale";
 
 // 한국어 로케일 등록
 registerLocale("ko", ko);
-export default function Register() {
+export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>> }) {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
@@ -33,23 +33,25 @@ export default function Register() {
         id: "",
         password: "",
         passwordChk: "",
+        birthDate: "",
         idDupChkYn: "",
         nicknameDupChkYn: "",
-        birthDate: "",
     });
 
     const [dupSuccessMessage, setDupSuccessMessage] = useState({
         id: "",
-        nickname: ""
+        nickname: "",
     });
     const [dupErrorMessage,setDupErrorMessage] = useState({
         id: "",
-        nickname: ""
+        nickname: "",
     });
 
     const [dupChkYn, setDupChkYn] = useState({
         id: "N",
-        nickname: "N"
+        nickname: "N",
+        email:"N",
+        phoneNumber:"N"
     });
 
     const validate = () => {
@@ -94,6 +96,8 @@ export default function Register() {
         setErrors(newErrors);
         return Object.values(newErrors).every((error) => error === "");
     };
+
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -221,21 +225,67 @@ export default function Register() {
         }
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handelEmailDupChk = async ()=> {
+        const email = formData.email;
 
+        try {
+            const response = await axios.post('/auth/emailDupChk', null, { params: { email } });
+
+            if(response.data) {
+                setDupChkYn((prev) =>  ({
+                    ...prev,
+                    email: 'Y',
+                }));
+            }
+        } catch (error) {
+            alert('중복체크에 실패 했습니다. 관리자에게 문의하세요.');
+        }
+    };
+
+    const handelPhoneNumberDupChk = async ()=> {
+        const phoneNumber = formData.phoneNumber;
+
+        try {
+            const response = await axios.post('/auth/phoneNumberDupChk', null, { params: { phoneNumber } });
+
+            if(response.data) {
+                setDupChkYn((prev) =>  ({
+                    ...prev,
+                    phoneNumber: 'Y',
+                }));
+            }
+        } catch (error) {
+            alert('중복체크에 실패 했습니다. 관리자에게 문의하세요.');
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        handelEmailDupChk();
+        handelPhoneNumberDupChk();
+
+
         if (validate()) {
             // 서버로 데이터 전송
             const response = await axios.post('/auth/register', formData);
             if(response) {
-                alert("회원가입 성공!");
-                navigate('/');
+                localStorage.setItem("accessToken", response.data[0]);
+                localStorage.setItem("refreshToken", response.data[1]);
+                setIsLoggedIn(response.data[1]);
+                alert("회원가입 되었습니다. 로그인을 해주세요.");
+                navigate('/login');
             }
         } else if (dupChkYn.id === 'N') {
             alert("아이디 중복확인을 해주세요.");
             return;
         } else if (dupChkYn.nickname === 'N') {
             alert("닉네임 중복확인을 해주세요.");
+            return;
+        } else if (dupChkYn.phoneNumber === 'Y') {
+            alert("이미 등록된 휴대전화번호 입니다.");
+            return;
+        } else if (dupChkYn.email === 'Y') {
+            alert("이미 등록된 이메일 입니다.");
             return;
         } else {
             alert("입력값을 확인해주세요.");
