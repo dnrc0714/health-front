@@ -1,23 +1,25 @@
 import React, {useState} from "react"
+import {useNavigate} from "react-router-dom";
 
 export default function PostList() {
+    const navigate = useNavigate();
 
     const response = async () => {
     }
     const [posts, setPosts] = useState([
         { id: 1, title: "첫 번째 게시글", author: "Alice", date: "2025-01-10" },
-        { id: 2, title: "두 번째 게시글", author: "Bob", date: "2025-01-09" },
-        { id: 3, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 4, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 5, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 6, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 7, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 8, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 9, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 10, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 11, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 12, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        { id: 13, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 2, title: "두 번째 게시글", author: "Bob", date: "2025-01-09" },
+        // { id: 3, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 4, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 5, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 6, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 7, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 8, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 9, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 10, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 11, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 12, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
+        // { id: 13, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
     ]);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,6 +37,7 @@ export default function PostList() {
 
     const handleWritePost = () => {
         alert("글쓰기 페이지로 이동합니다.");
+        navigate('/post/write');
     };
 
 

@@ -8,8 +8,8 @@ import {useRecoilState} from "recoil";
 import {authState} from "./utils/recoil/atoms";
 import Register from "./components/auth/Register";
 import Agreement from "./components/auth/Agreement";
-import PostList from "./components/post/postList";
-
+import PostList from "./components/post/PostList";
+import PostWrite from "./components/post/PostWrite";
 
 
 export default function App() {
@@ -23,6 +23,7 @@ export default function App() {
                             <Route path="/" element={<MainContent/>}/>
                             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn}/>}/>
                             <Route path="/post" element={<PostList/>}/>
+                            <Route path="/post/write" element={<PostWrite/>}/>
                             <Route path="/register" element={<Register setIsLoggedIn={setIsLoggedIn}/>}/>
                             <Route path="/agreement" element={<Agreement/>}/>
                         </Routes>
