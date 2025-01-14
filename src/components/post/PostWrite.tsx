@@ -1,15 +1,22 @@
-import React, {useRef, useState} from "react"
+import React, {useEffect, useRef, useState} from "react"
 import {Editor} from "@toast-ui/react-editor";
 import '@toast-ui/editor/dist/i18n/ko-kr';
 import colorPlugin from "@toast-ui/editor-plugin-color-syntax";
 import 'tui-color-picker/dist/tui-color-picker.css';
 import '@toast-ui/editor-plugin-color-syntax/dist/toastui-editor-plugin-color-syntax.css';
 import PostEditor from "./PostEditor";
+import axios from "axios";
+import {useLocation} from "react-router-dom";
 
 export default function PostWrite(){
+    const location = useLocation();
     const editorRef = useRef<Editor>(null);
     const [title, setTitle] = useState('');
     const [file, setFile] = useState<File | null>(null);
+
+    useEffect(() => {
+        console.log(location.state.status);
+    }, []);
 
     // 첨부파일 변경 핸들러
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +43,7 @@ export default function PostWrite(){
             const formData = new FormData();
             formData.append("title", title);
             formData.append("content", content);
+            formData.append("state", location.state.status);
             if (file) {
                 formData.append("file", file);
             }
@@ -47,10 +55,24 @@ export default function PostWrite(){
                 fileName: file?.name,
             });
 
+            postSave(formData, editorRef);
+            editorRef.current.getInstance().setMarkdown("");
+        }
+    };
+
+    const postSave = async (formData: FormData, editorRef: React.RefObject<Editor | null>) => {
+        const response = await axios.post('/post/save', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        if(response) {
             alert("게시글이 성공적으로 등록되었습니다.");
             setTitle("");
             setFile(null);
-            editorRef.current.getInstance().setMarkdown("");
+            if(editorRef.current) {
+                editorRef.current.getInstance().setMarkdown("");
+            }
         }
     };
 

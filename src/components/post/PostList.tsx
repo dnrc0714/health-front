@@ -37,7 +37,9 @@ export default function PostList() {
 
     const handleWritePost = () => {
         alert("글쓰기 페이지로 이동합니다.");
-        navigate('/post/write');
+        navigate('/post/write', {
+            state : {status: 'new'}
+        });
     };
 
 

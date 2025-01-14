@@ -12,6 +12,14 @@ type Props = {
 
 
 export default function PostEditor({content, editorRef}: Props) {
+    const toolbarItems = [
+        ['bold', 'italic', 'strike'],
+        ['hr', 'quote'],
+        ['ul', 'ol', 'task', 'indent', 'outdent'],
+        ['table', 'image', 'link'],
+        ['code', 'codeblock'],
+        ['scrollSync'],
+    ];
     return (
         <div className="w-full items-center">
              <Editor
@@ -23,6 +31,7 @@ export default function PostEditor({content, editorRef}: Props) {
                 useCommandShortcut={false}
                 language="ko-KR"
                 ref={editorRef}
+                toolbarItems={toolbarItems}
             />
         </div>
         );
