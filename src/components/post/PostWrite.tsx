@@ -1,28 +1,51 @@
-import React, {useEffect, useRef, useState} from "react"
-import {Editor} from "@toast-ui/react-editor";
-import '@toast-ui/editor/dist/i18n/ko-kr';
-import colorPlugin from "@toast-ui/editor-plugin-color-syntax";
-import 'tui-color-picker/dist/tui-color-picker.css';
-import '@toast-ui/editor-plugin-color-syntax/dist/toastui-editor-plugin-color-syntax.css';
-import PostEditor from "./PostEditor";
+import React, { useState } from "react"
+
 import axios from "axios";
 import {useLocation} from "react-router-dom";
+import { EditorState } from 'draft-js';
+import {Editor} from "react-draft-wysiwyg";
+import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import PostEditor from "./PostEditor";
+import ControlledEditor from "./PostEditor";
+
+const editorStyle = {
+    cursor: "pointer",
+    width: "100%",
+    minHeight: "20rem",
+    border: "2px solid rgba(209, 213, 219, var(--tw-border-opacity))",
+};
+
+const toolbar={
+    options: [
+        "fontSize",
+        "fontFamily",
+        "list",
+        "textAlign",
+        "colorPicker",
+        "link",
+        "embedded",
+        "emoji",
+        "image",
+        "remove",
+        "history",
+    ],
+};
 
 export default function PostWrite(){
     const location = useLocation();
-    const editorRef = useRef<Editor>(null);
-    const [title, setTitle] = useState('');
+    const [title, setTitle] = useState("");
     const [file, setFile] = useState<File | null>(null);
-
-    useEffect(() => {
-        console.log(location.state.status);
-    }, []);
+    const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
 
     // 첨부파일 변경 핸들러
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
         }
+    };
+
+    const handleEditorStateChange = (newState: EditorState) => {
+        setEditorState(newState); // 부모 상태 업데이트
     };
 
     // 게시 버튼 클릭 핸들러
@@ -32,35 +55,25 @@ export default function PostWrite(){
             return;
         }
 
-        if (editorRef.current) {
-            const content = editorRef.current.getInstance().getMarkdown();
-            if (!content.trim()) {
-                alert("내용을 입력해주세요.");
-                return;
-            }
 
-            // FormData 생성
-            const formData = new FormData();
-            formData.append("title", title);
-            formData.append("content", content);
-            formData.append("state", location.state.status);
-            if (file) {
-                formData.append("file", file);
-            }
+        // if (!content.trim()) {
+        //     alert("내용을 입력해주세요.");
+        //     return;
+        // }
 
-            // 서버로 데이터 전송 (예: fetch API 사용)
-            console.log("Form Data:", {
-                title,
-                content,
-                fileName: file?.name,
-            });
-
-            postSave(formData, editorRef);
-            editorRef.current.getInstance().setMarkdown("");
+        // FormData 생성
+        const formData = new FormData();
+        formData.append("title", title);
+        // formData.append("content", content);
+        formData.append("state", location.state.status);
+        if (file) {
+            formData.append("file", file);
         }
-    };
 
-    const postSave = async (formData: FormData, editorRef: React.RefObject<Editor | null>) => {
+        postSave(formData);
+    }
+
+    const postSave = async (formData: FormData) => {
         const response = await axios.post('/post/save', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -70,9 +83,7 @@ export default function PostWrite(){
             alert("게시글이 성공적으로 등록되었습니다.");
             setTitle("");
             setFile(null);
-            if(editorRef.current) {
-                editorRef.current.getInstance().setMarkdown("");
-            }
+            // setContent(content);
         }
     };
 
@@ -100,16 +111,36 @@ export default function PostWrite(){
             <div style={{ marginBottom: "10px" }}>
                 <label>
                     <strong>내용:</strong>
-                    <PostEditor editorRef={editorRef}/>
                 </label>
+                <div className="w-full items-center">
+                    {/*<ControlledEditor*/}
+                    {/*    editorState={editorState}*/}
+                    {/*    onEditorStateChange={handleEditorStateChange}*/}
+                    {/*/>*/}
+                    <>
+                         <Editor
+                             editorState={editorState}
+                             // toolbarClassName="toolbar-className"
+                            wrapperClassName="wrapper-className"
+                            editorClassName="editor-className"
+                            editorStyle={editorStyle}
+                            placeholder="내용을 작성해주세요."
+                            localization={{
+                                locale: 'ko',
+                           }}
+
+                            onEditorStateChange={handleEditorStateChange}
+                        />
+                    </>
+                </div>
             </div>
-            <div style={{ marginBottom: "20px" }}>
+            <div style={{marginBottom: "20px"}}>
                 <label>
                     <strong>첨부파일:</strong>
                     <input
                         type="file"
                         onChange={handleFileChange}
-                        style={{ marginTop: "10px" }}
+                        style={{marginTop: "10px"}}
                     />
                 </label>
             </div>
