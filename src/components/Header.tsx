@@ -7,6 +7,7 @@ import {IconButton, Tooltip} from "@mui/material";
 import {AccountCircle, CalendarMonth, Forum, Login, Logout} from "@mui/icons-material";
 import Sidebar from "./Sidebar";
 import MenuIcon from "@mui/icons-material/Menu";
+import {logout} from "../services/auth/AuthService";
 
 export default function Header() {
     const navigate = useNavigate();
@@ -23,15 +24,7 @@ export default function Header() {
             }
 
             // 서버에 로그아웃 요청
-            const response = await axios.post(
-                '/auth/logout',
-                {}, // 빈 요청 본문
-                {
-                    headers: {
-                        Authorization: `Bearer ${refreshToken}`, // Authorization 헤더에 refreshToken 추가
-                    },
-                }
-            )
+            const response = logout(refreshToken);
             alert(response.data); // "로그아웃 되었습니다."
 
             // 클라이언트 측 토큰 제거

@@ -5,8 +5,6 @@ import {useLocation} from "react-router-dom";
 import { EditorState } from 'draft-js';
 import {Editor} from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import PostEditor from "./PostEditor";
-import ControlledEditor from "./PostEditor";
 
 const editorStyle = {
     cursor: "pointer",

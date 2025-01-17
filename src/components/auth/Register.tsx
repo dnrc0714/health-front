@@ -1,9 +1,9 @@
 import React, {useState} from "react";
-import axios from "axios";
 import {useNavigate} from "react-router-dom";
 import DatePicker, {registerLocale} from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {ko} from "date-fns/locale";
+import {EmailDupChk, IdDupChk, NicknameDupChk, PhoneNumberDupChk, Registe} from "../../services/auth/AuthService";
 
 
 // 한국어 로케일 등록
@@ -145,7 +145,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         }
 
         try {
-            const response = await axios.post('/auth/idDupChk', null, { params: { userId } });
+            const response = await IdDupChk(userId);
 
             if(!response.data) {
                 setDupSuccessMessage((prev) =>  ({
@@ -189,7 +189,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         }
 
         try {
-            const response = await axios.post('/auth/nicknameDupChk', null, { params: { nickname } });
+            const response =  await NicknameDupChk(nickname);
 
             if(!response.data) {
                 setDupSuccessMessage((prev) =>  ({
@@ -229,7 +229,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         const email = formData.email;
 
         try {
-            const response = await axios.post('/auth/emailDupChk', null, { params: { email } });
+            const response = await EmailDupChk(email);
 
             if(response.data) {
                 setDupChkYn((prev) =>  ({
@@ -246,7 +246,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         const phoneNumber = formData.phoneNumber;
 
         try {
-            const response = await axios.post('/auth/phoneNumberDupChk', null, { params: { phoneNumber } });
+            const response =  await PhoneNumberDupChk(phoneNumber);
 
             if(response.data) {
                 setDupChkYn((prev) =>  ({
@@ -267,7 +267,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
 
         if (validate()) {
             // 서버로 데이터 전송
-            const response = await axios.post('/auth/register', formData);
+            const response =  await Registe(formData);
             if(response) {
                 localStorage.setItem("accessToken", response.data[0]);
                 localStorage.setItem("refreshToken", response.data[1]);
