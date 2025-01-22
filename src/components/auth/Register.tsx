@@ -4,7 +4,7 @@ import DatePicker, {registerLocale} from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {ko} from "date-fns/locale";
 import {EmailDupChk, IdDupChk, NicknameDupChk, PhoneNumberDupChk, UserRegiste} from "../../services/auth/AuthService";
-import SelectBox from "../common/selectBox";
+import SelectBox from "../common/SelectBox";
 
 
 // 한국어 로케일 등록
@@ -301,7 +301,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
     };
 
     return (
-        <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6 mt-20">
+        <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
             <h1 className="text-2xl font-bold mb-4 text-center">HEALTH 회원가입</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/** 성명 */}

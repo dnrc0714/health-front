@@ -20,9 +20,11 @@ export default function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <HashRouter>
-                <div className="min-h-screen bg-gray-100">
-                    <Header/>
-                    <div className="mt-20 mb-10 min-h-screen bg-gray-100">
+                <div className="flex flex-col w-screen h-screen">
+                    <div className="h-20">
+                        <Header/>
+                    </div>
+                    <div className="flex-grow overflow-y-auto h-full justify-center items-center bg-gray-100">
                         <Routes>
                             <Route path="/" element={<MainContent/>}/>
                             <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn}/>}/>
@@ -32,7 +34,9 @@ export default function App() {
                             <Route path="/agreement" element={<AgreementPage/>}/>
                         </Routes>
                     </div>
-                    <Footer/>
+                    <div className="h-14">
+                        <Footer/>
+                    </div>
                 </div>
             </HashRouter>
         </QueryClientProvider>

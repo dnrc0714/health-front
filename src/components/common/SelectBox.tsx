@@ -10,7 +10,7 @@ type SelectBoxProps = {
     changeId:string
 }
 export default function SelectBox({code, changeId, changeState}:SelectBoxProps) {
-    // TB: cmm_code > sys_code, changeId: change할 html태그의 id, changeState: change handler
+    // TB: cmm_code > sys_code, changeId: selectBox id, changeState: change handler
     const {data, error} = useQuery({
         queryKey: ['sysCode', code],
         queryFn: () => CmmCode(code)

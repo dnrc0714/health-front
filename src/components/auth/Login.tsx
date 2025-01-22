@@ -39,7 +39,7 @@ export default function Login({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch
     }
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <div className="flex justify-center items-center bg-gray-100 h-full">
             <form
                 onSubmit={(e) => {
                     e.preventDefault(); // 폼 제출 시 페이지 리로드 방지

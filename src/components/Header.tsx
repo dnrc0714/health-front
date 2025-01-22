@@ -50,7 +50,6 @@ export default function Header() {
     };
 
     return (
-        // <header className="bg-gradient-to-r from-red-500 via-black to-black text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
             <header className="bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-500 text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
             <div className="flex justify-between items-center w-full max-w-screen">
                 {/* 좌측 상단: 더보기 버튼 */}

@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, {useCallback, useState} from "react"
 
 import {useLocation} from "react-router-dom";
 import {convertToRaw, EditorState} from 'draft-js';
@@ -24,7 +24,7 @@ export default function PostWrite(){
     };
 
     // 게시 버튼 클릭 핸들러
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         const contentState = editorState.getCurrentContent();
 
 
@@ -66,7 +66,7 @@ export default function PostWrite(){
             console.error("게시글 등록 실패:", error);
             alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
         }
-    }
+    }, [title, editorState]);
 
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
