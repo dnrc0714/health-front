@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import {login} from "../../services/auth/LoginService";
+import {LoginUser} from "../../services/auth/AuthService";
+
+
 
 
 export default function Login({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>> }) {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+    const [formData, setFormData] = useState({
+        id:"",
+        password:"",
+    });
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleLogin = async () => {
         try {
-            const response = await login(username, password);
-
-            const { accessToken, refreshToken } = response.data; // 서버 응답에서 토큰 추출
+            const response = await LoginUser(formData);
+            const [accessToken, refreshToken] = response; // 서버 응답에서 토큰 추출
 
             // 액세스 토큰과 리프레시 토큰을 localStorage에 저장
             localStorage.setItem('accessToken', accessToken);
@@ -26,15 +28,15 @@ export default function Login({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch
             setError('');
             navigate('/');
         } catch (err) {
-            setError('아이디 혹은 비밀번호가 다릅니다.');
+            alert("로그인에 실패했습니다.");
+            alert(err);
         }
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter") {
-            handleLogin();
-        }
-    };
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    }
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100">
@@ -45,22 +47,21 @@ export default function Login({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch
                 }}
                 className="w-96 p-6 bg-white shadow-md rounded-lg"
             >
-                <h2 className="text-2xl mb-4 text-center">HEALTH</h2>
+                <h2 className="text-3xl mb-4 text-center font-bold">CB HEALTH</h2>
                 {error && <p className="text-red-500 text-sm">{error}</p>}
                 <input
+                    name="id"
                     type="text"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    onKeyDown={handleKeyDown}
+                    placeholder="아이디"
+                    value={formData.id}
+                    onChange={handleChange}
                     className="w-full p-2 mb-3 border border-gray-300 rounded"
                 />
                 <input
+                    name="password"
                     type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleKeyDown}
+                    placeholder="비밀번호"
+                    onChange={handleChange}
                     className="w-full p-2 mb-3 border border-gray-300 rounded"
                 />
                 <div className="flex items-center justify-between gap-2">

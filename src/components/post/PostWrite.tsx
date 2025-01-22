@@ -1,33 +1,10 @@
 import React, { useState } from "react"
 
-import axios from "axios";
 import {useLocation} from "react-router-dom";
-import { EditorState } from 'draft-js';
-import {Editor} from "react-draft-wysiwyg";
-import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-
-const editorStyle = {
-    cursor: "pointer",
-    width: "100%",
-    minHeight: "20rem",
-    border: "2px solid rgba(209, 213, 219, var(--tw-border-opacity))",
-};
-
-const toolbar={
-    options: [
-        "fontSize",
-        "fontFamily",
-        "list",
-        "textAlign",
-        "colorPicker",
-        "link",
-        "embedded",
-        "emoji",
-        "image",
-        "remove",
-        "history",
-    ],
-};
+import {convertToRaw, EditorState} from 'draft-js';
+import PostEditor from "./PostEditor";
+import {SavePost} from "../../services/post/PostService";
+import draftToHtml from "draftjs-to-html";
 
 export default function PostWrite(){
     const location = useLocation();
@@ -43,47 +20,53 @@ export default function PostWrite(){
     };
 
     const handleEditorStateChange = (newState: EditorState) => {
-        setEditorState(newState); // 부모 상태 업데이트
+        setEditorState(newState);
     };
 
     // 게시 버튼 클릭 핸들러
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
+        const contentState = editorState.getCurrentContent();
+
+
         if (!title.trim()) {
             alert("제목을 입력해주세요.");
             return;
         }
 
-
-        // if (!content.trim()) {
-        //     alert("내용을 입력해주세요.");
-        //     return;
-        // }
-
+        if(!contentState) {
+            alert("내용을 입력해주세요.");
+            return;
+        }
+        const htmlContent = draftToHtml(convertToRaw(contentState));
+        const refreshToken = localStorage.getItem('refreshToken');
         // FormData 생성
         const formData = new FormData();
         formData.append("title", title);
-        // formData.append("content", content);
+        formData.append("content", htmlContent);
         formData.append("state", location.state.status);
+        if (refreshToken) {
+            formData.append("refreshToken", refreshToken); // refreshToken 추가
+        }
+
         if (file) {
             formData.append("file", file);
         }
 
-        postSave(formData);
-    }
+        try {
+            const response = await SavePost(formData);
+            if (response) {
+                alert("게시글이 성공적으로 등록되었습니다.");
 
-    const postSave = async (formData: FormData) => {
-        const response = await axios.post('/post/save', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
-        if(response) {
-            alert("게시글이 성공적으로 등록되었습니다.");
-            setTitle("");
-            setFile(null);
-            // setContent(content);
+                // 상태 초기화
+                setTitle("");
+                setFile(null);
+                setEditorState(EditorState.createEmpty()); // 에디터 상태 초기화
+            }
+        } catch (error) {
+            console.error("게시글 등록 실패:", error);
+            alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
         }
-    };
+    }
 
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
@@ -111,25 +94,10 @@ export default function PostWrite(){
                     <strong>내용:</strong>
                 </label>
                 <div className="w-full items-center">
-                    {/*<ControlledEditor*/}
-                    {/*    editorState={editorState}*/}
-                    {/*    onEditorStateChange={handleEditorStateChange}*/}
-                    {/*/>*/}
-                    <>
-                         <Editor
-                             editorState={editorState}
-                             // toolbarClassName="toolbar-className"
-                            wrapperClassName="wrapper-className"
-                            editorClassName="editor-className"
-                            editorStyle={editorStyle}
-                            placeholder="내용을 작성해주세요."
-                            localization={{
-                                locale: 'ko',
-                           }}
-
-                            onEditorStateChange={handleEditorStateChange}
-                        />
-                    </>
+                    <PostEditor
+                        editorState={editorState}
+                        onEditorStateChange={handleEditorStateChange}
+                    />
                 </div>
             </div>
             <div style={{marginBottom: "20px"}}>

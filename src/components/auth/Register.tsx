@@ -1,15 +1,17 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import DatePicker, {registerLocale} from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import {ko} from "date-fns/locale";
-import {EmailDupChk, IdDupChk, NicknameDupChk, PhoneNumberDupChk, Registe} from "../../services/auth/AuthService";
+import {EmailDupChk, IdDupChk, NicknameDupChk, PhoneNumberDupChk, UserRegiste} from "../../services/auth/AuthService";
+import SelectBox from "../common/selectBox";
 
 
 // 한국어 로케일 등록
 registerLocale("ko", ko);
 export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>> }) {
     const navigate = useNavigate();
+    const [userTp, setUserTp] = useState('');
 
     const [formData, setFormData] = useState({
         userTp: "",
@@ -267,14 +269,19 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
 
         if (validate()) {
             // 서버로 데이터 전송
-            const response =  await Registe(formData);
+            const response =  await UserRegiste(formData);
+            const [accessToken, refreshToken] = response;
+
+
             if(response) {
-                localStorage.setItem("accessToken", response.data[0]);
-                localStorage.setItem("refreshToken", response.data[1]);
-                setIsLoggedIn(response.data[1]);
-                alert("회원가입 되었습니다. 로그인을 해주세요.");
-                navigate('/login');
+                localStorage.setItem("accessToken", accessToken);
+                localStorage.setItem("refreshToken", refreshToken);
+                setIsLoggedIn(refreshToken);
+
+                alert('회원가입이 완료되었습니다.');
+                navigate('/');
             }
+
         } else if (dupChkYn.id === 'N') {
             alert("아이디 중복확인을 해주세요.");
             return;
@@ -372,18 +379,19 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="userTp" className="block font-medium text-gray-700">
                         회원구분
                     </label>
-                    <select
-                        id="userTp"
-                        name="userTp"
-                        value={formData.userTp}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
-                    >
-                        <option value="">회원구분을 선택해주세요</option>
-                        <option value="1">일반인</option>
-                        <option value="2">트레이너</option>
-                        <option value="3">선수</option>
-                    </select>
+                    {/*<select*/}
+                    {/*    id="userTp"*/}
+                    {/*    name="userTp"*/}
+                    {/*    value={formData.userTp}*/}
+                    {/*    onChange={handleChange}*/}
+                    {/*    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"*/}
+                    {/*>*/}
+                    {/*    <option value="{}">회원구분을 선택해주세요</option>*/}
+                    {/*    <option value="1">일반인</option>*/}
+                    {/*    <option value="2">트레이너</option>*/}
+                    {/*    <option value="3">선수</option>*/}
+                    {/*</select>*/}
+                    <SelectBox code={"001"} val={formData.userTp} changeId={"userTp"} changeState={handleChange}/>
                     {errors.userTp && <p className="text-red-500 text-sm">{errors.userTp}</p>}
                 </div>
 

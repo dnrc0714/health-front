@@ -7,7 +7,8 @@ import {IconButton, Tooltip} from "@mui/material";
 import {AccountCircle, CalendarMonth, Forum, Login, Logout} from "@mui/icons-material";
 import Sidebar from "./Sidebar";
 import MenuIcon from "@mui/icons-material/Menu";
-import {logout} from "../services/auth/AuthService";
+import {LogoutUser} from "../services/auth/AuthService";
+
 
 export default function Header() {
     const navigate = useNavigate();
@@ -24,8 +25,8 @@ export default function Header() {
             }
 
             // 서버에 로그아웃 요청
-            const response = logout(refreshToken);
-            alert(response.data); // "로그아웃 되었습니다."
+            const response = await LogoutUser(refreshToken);
+            alert(response); // "로그아웃 되었습니다."
 
             // 클라이언트 측 토큰 제거
             localStorage.removeItem('accessToken');
@@ -49,13 +50,14 @@ export default function Header() {
     };
 
     return (
-        <header className="bg-black text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
+        // <header className="bg-gradient-to-r from-red-500 via-black to-black text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
+            <header className="bg-gradient-to-r from-blue-500 via-indigo-600 to-purple-500 text-white p-4 fixed top-0 left-0 w-full z-50 shadow-md">
             <div className="flex justify-between items-center w-full max-w-screen">
                 {/* 좌측 상단: 더보기 버튼 */}
                 <div className="lg:hidden">
                     <Tooltip title="더보기" arrow>
                         <IconButton
-                            color="primary"
+                            color="default"
                             onClick={handleSidebarToggle}
                             sx={{ fontSize: '2rem' }}
                         >
@@ -78,7 +80,7 @@ export default function Header() {
                 <div className="hidden md:flex">
                     <Tooltip title="게시판" arrow>
                         <IconButton
-                            color="primary"
+                            color="default"
                             sx={{ fontSize: '2rem' }}
                             onClick={() => handleNavigate('/post')}
                         >
@@ -89,7 +91,7 @@ export default function Header() {
                     {/* 운동 일정 버튼 */}
                     <Tooltip title="운동 일정" arrow>
                         <IconButton
-                            color="primary"
+                            color="default"
                             sx={{ fontSize: '2rem' }}
                             onClick={() => handleNavigate('/schedule')}
                         >
@@ -103,7 +105,7 @@ export default function Header() {
                     {localStorage.getItem('refreshToken') ? (
                         <Tooltip title="마이페이지" arrow>
                             <IconButton
-                                color="primary"
+                                color="default"
                                 sx={{ fontSize: '2rem' }}
                                 onClick={() => handleNavigate('/mypage')}
                             >
@@ -113,7 +115,7 @@ export default function Header() {
                     ) : (
                         <Tooltip title="로그인" arrow>
                             <IconButton
-                                color="info"
+                                color="default"
                                 sx={{ fontSize: '2rem' }}
                                 onClick={() => handleNavigate('/login')}
                             >

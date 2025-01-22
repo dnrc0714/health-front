@@ -1,26 +1,11 @@
-import React, {useState} from "react"
+import React, {useEffect, useState} from "react"
 import {useNavigate} from "react-router-dom";
+import {GetPostList} from "../../services/post/PostService";
+import PageNavigator from "../PageNavigator";
 
 export default function PostList() {
     const navigate = useNavigate();
-
-    const response = async () => {
-    }
-    const [posts, setPosts] = useState([
-        { id: 1, title: "첫 번째 게시글", author: "Alice", date: "2025-01-10" },
-        // { id: 2, title: "두 번째 게시글", author: "Bob", date: "2025-01-09" },
-        // { id: 3, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 4, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 5, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 6, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 7, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 8, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 9, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 10, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 11, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 12, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-        // { id: 13, title: "세 번째 게시글", author: "Charlie", date: "2025-01-08" },
-    ]);
+    const [posts, setPosts] = useState([]);
 
     const [currentPage, setCurrentPage] = useState(1);
     const postsPerPage = 10;
@@ -29,6 +14,7 @@ export default function PostList() {
     const indexOfLastPost = currentPage * postsPerPage;
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+
     const totalPages = Math.ceil(posts.length / postsPerPage);
 
     const handlePageChange = (page: number) => {
@@ -42,7 +28,18 @@ export default function PostList() {
         });
     };
 
+    useEffect(() => {
+        const loadPosts = async () => {
+            try {
+                const data = await GetPostList();
+                setPosts(data);
+            } catch (error) {
+                alert("게시글 목록을 불러오는 데 실패했습니다.");
+            }
+        }
 
+        loadPosts();
+    }, []);
     return (
         <div className="max-w-4xl mx-auto mt-8 p-4">
             {/* 헤더 */}
@@ -58,14 +55,15 @@ export default function PostList() {
 
             {/* 게시글 목록 */}
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                {currentPosts.map((post) => (
+                {currentPosts.map((post: {postId:string, title:string, creatorId:string, createdAt:string, creator:{nickname:string}}) => (
                     <div
-                        key={post.id}
+                        key={post.postId}
                         className="flex justify-between items-center px-4 py-2 border-b"
                     >
+                        {post.postId}
                         <span className="font-medium">{post.title}</span>
                         <div className="text-sm text-gray-500">
-                            <span>{post.author}</span> | <span>{post.date}</span>
+                            <span>{post.creator.nickname}</span> | <span>{post.createdAt}</span>
                         </div>
                     </div>
                 ))}
@@ -78,21 +76,7 @@ export default function PostList() {
             </div>
 
             {/* 페이지네이션 */}
-            <div className="flex justify-center mt-4 fixed bottom-1/4 left-0 w-full">
-                {Array.from({ length: totalPages }, (_, index) => (
-                    <button
-                        key={index + 1}
-                        onClick={() => handlePageChange(index + 1)}
-                        className={`px-4 py-2 mx-1 rounded ${
-                            currentPage === index + 1
-                                ? "bg-blue-500 text-white"
-                                : "bg-gray-200 text-gray-700"
-                        }`}
-                    >
-                        {index + 1}
-                    </button>
-                ))}
-            </div>
+            <PageNavigator currentPage={currentPage} totalPage={totalPages} handlePageChange={handlePageChange}/>
         </div>
     );
 }
