@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react"
-import {useNavigate} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {GetPostList} from "../../services/post/PostService";
 import PageNavigator from "../common/PageNavigator";
 import {useQuery} from "@tanstack/react-query";
@@ -72,7 +72,7 @@ export default function PostList() {
                         className="flex justify-between items-center px-4 py-2 border-b"
                     >
                         {post.postId}
-                        <span className="font-medium">{post.title}</span>
+                        <Link className="font-medium" to={`/post/${post.postId}`}>{post.title}</Link>
                         <div className="text-sm text-gray-500">
                             <span>{post.creator.nickname}</span> | <span>{post.createdAt}</span>
                         </div>

@@ -9,6 +9,7 @@ type SelectBoxProps = {
     changeState: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     changeId:string
 }
+
 export default function SelectBox({code, changeId, changeState}:SelectBoxProps) {
     // TB: cmm_code > sys_code, changeId: selectBox id, changeState: change handler
     const {data, error} = useQuery({

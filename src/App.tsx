@@ -12,6 +12,7 @@ import PostListPage from "./pages/post/PostListPage";
 import PostWritePage from "./pages/post/PostWritePage";
 import Footer from "./components/Footer";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import PostPage from "./pages/post/PostPage";
 
 
 export default function App() {
@@ -30,6 +31,7 @@ export default function App() {
                             <Route path="/login" element={<LoginPage setIsLoggedIn={setIsLoggedIn}/>}/>
                             <Route path="/post" element={<PostListPage/>}/>
                             <Route path="/post/write" element={<PostWritePage/>}/>
+                            <Route path="/post/:postId" element={<PostPage/>}/>
                             <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn}/>}/>
                             <Route path="/agreement" element={<AgreementPage/>}/>
                         </Routes>
