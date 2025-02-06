@@ -5,6 +5,7 @@ import PageNavigator from "../common/PageNavigator";
 import {useQuery} from "@tanstack/react-query";
 import {CmmCode} from "../../services/cmm/CmmService";
 import {Spinner} from "@material-tailwind/react";
+import {formatISODate} from "../../utils/DateUtil";
 
 export default function PostList() {
     const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function PostList() {
     const indexOfFirstPost = indexOfLastPost - postsPerPage;
     let currentPosts;
     let totalPages = 0;
-    if(data) {
+    if(data && data.length > 0) {
         currentPosts = data.slice(indexOfFirstPost, indexOfLastPost);
         totalPages = Math.ceil(data.length / postsPerPage);
     }
@@ -66,7 +67,7 @@ export default function PostList() {
 
              게시글 목록
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                {currentPosts?.map((post: {postId:string, title:string, creatorId:string, createdAt:string, creator:{nickname:string}}) => (
+                {currentPosts?.map((post: {postId:string, title:string, creatorId:string, updatedAt:string, creator:{nickname:string}}) => (
                     <div
                         key={post.postId}
                         className="flex justify-between items-center px-4 py-2 border-b"
@@ -74,7 +75,7 @@ export default function PostList() {
                         {post.postId}
                         <Link className="font-medium" to={`/post/${post.postId}`}>{post.title}</Link>
                         <div className="text-sm text-gray-500">
-                            <span>{post.creator.nickname}</span> | <span>{post.createdAt}</span>
+                            <span>{post.creator.nickname}</span>|<span>{formatISODate(post.updatedAt)}</span>
                         </div>
                     </div>
                 ))}

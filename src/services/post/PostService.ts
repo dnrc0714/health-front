@@ -23,9 +23,9 @@ export const GetPostList = async () => {
     }
 }
 
-export const GetPost = async (postId:bigint) => {
+export const GetPost = async (postId:number) => {
     try {
-        const response = await axios.post('post/detail', postId);
+        const response = await axios.post(`post/detail?postId=${postId}` );
 
         return response.data;
     } catch (error) {
@@ -33,9 +33,9 @@ export const GetPost = async (postId:bigint) => {
     }
 }
 
-export const DeletePost = async (postId:bigint) => {
+export const DeletePost = async (postId:number) => {
     try {
-        const response = await axios.post('post/delete', postId);
+        const response = await axios.post('post/delete', {postId});
 
         return response.data;
     } catch (error) {
