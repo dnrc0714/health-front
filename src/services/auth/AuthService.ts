@@ -37,13 +37,13 @@ export const UserRegiste = async (formData: {
     id: string;
     password: string;
     passwordChk: string;
-    birthDate: Date | null;
+    birthDate: string;
     agreeYn: string
 })=> {
     try {
         const requestData = {
             ...formData,
-            birthDate: formData.birthDate ? formData.birthDate.toISOString().split('T')[0] : null,
+            birthDate: formData.birthDate ? formData.birthDate.split('T')[0] : null,
         };
 
         const response = await axios.post('auth/register', requestData);

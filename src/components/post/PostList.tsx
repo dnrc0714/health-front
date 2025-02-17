@@ -3,8 +3,6 @@ import {Link, useNavigate} from "react-router-dom";
 import {GetPostList} from "../../services/post/PostService";
 import PageNavigator from "../common/PageNavigator";
 import {useQuery} from "@tanstack/react-query";
-import {CmmCode} from "../../services/cmm/CmmService";
-import {Spinner} from "@material-tailwind/react";
 import {formatISODate} from "../../utils/DateUtil";
 
 export default function PostList() {
@@ -19,11 +17,6 @@ export default function PostList() {
 
     if(error) {
         return <div>게시글 목록을 불러오는 데 실패했습니다.</div>
-    }
-
-    if(isFetching) {
-        <Spinner className="h-16 w-16 text-gray-900/50" onPointerEnterCapture={undefined}
-                 onPointerLeaveCapture={undefined}/>
     }
 
     // 페이지 계산

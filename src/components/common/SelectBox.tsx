@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect} from "react";
 import {useQuery} from "@tanstack/react-query";
 import {CmmCode} from "../../services/cmm/CmmService";
 
@@ -10,12 +10,21 @@ type SelectBoxProps = {
     changeId:string
 }
 
-export default function SelectBox({code, changeId, changeState}:SelectBoxProps) {
+export default function SelectBox({code, changeId, changeState, val}:SelectBoxProps) {
     // TB: cmm_code > sys_code, changeId: selectBox id, changeState: change handler
     const {data, error} = useQuery({
         queryKey: ['sysCode', code],
-        queryFn: () => CmmCode(code)
+        queryFn: () => CmmCode(code),
     });
+
+    // 첫 번째 아이템을 기본값으로 설정
+    useEffect(() => {
+        if (data && data.length > 0 && !val) {
+            changeState({
+                target: { name: changeId, value: data[0].code },
+            } as React.ChangeEvent<HTMLSelectElement>);
+        }
+    }, [data, val, changeId, changeState]);
 
     if(error) {
         return <div>error.message</div>;
@@ -26,6 +35,7 @@ export default function SelectBox({code, changeId, changeState}:SelectBoxProps) 
             <select
                 id={changeId}
                 name={changeId}
+                value={val}
                 onChange={changeState}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
             >

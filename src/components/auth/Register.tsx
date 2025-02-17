@@ -5,28 +5,43 @@ import "react-datepicker/dist/react-datepicker.css";
 import {ko} from "date-fns/locale";
 import {EmailDupChk, IdDupChk, NicknameDupChk, PhoneNumberDupChk, UserRegiste} from "../../services/auth/AuthService";
 import SelectBox from "../common/SelectBox";
+import useForm from "../../hooks/useForm";
+import useErrors from "../../hooks/useErrors";
+import Button from "../common/Button";
+import Input from "../common/Input";
 
 
 // 한국어 로케일 등록
 registerLocale("ko", ko);
+
+type FormType = {
+    userTp: string;
+    username: string;
+    email: string;
+    phoneNumber: string;
+    nickname: string;
+    id: string;
+    password: string;
+    passwordChk: string;
+    birthDate: string;
+    agreeYn: string;
+}
+
 export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>> }) {
     const navigate = useNavigate();
-    const [userTp, setUserTp] = useState('');
-
-    const [formData, setFormData] = useState({
-        userTp: "",
-        username: "",
-        email: "",
-        phoneNumber: "",
-        nickname: "",
-        id: "",
-        password: "",
-        passwordChk: "",
-        birthDate: null as Date | null,
-        agreeYn: "Y",
+    const formState = useForm({
+            userTp: "",
+            username: "",
+            email: "",
+            phoneNumber: "",
+            nickname: "",
+            id: "",
+            password: "",
+            passwordChk: "",
+            birthDate: "",
+            agreeYn: "Y",
     });
-
-    const [errors, setErrors] = useState({
+    const errorState = useErrors({
         userTp: "",
         username: "",
         email: "",
@@ -57,60 +72,81 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
     });
 
     const validate = () => {
-        const newErrors = { ...errors };
-
         // 회원구분
-        newErrors.userTp = formData.userTp ? "" : "회원구분은 필수 입력 값입니다.";
+        if(formState.values.userTp == '') {
+            console.log(formState.values);
+            errorState.setError("userTp", "회원구분은 필수 입력 값입니다.");
+        }
 
         // 닉네임
-        newErrors.nickname = formData.nickname ? "" : "닉네임은 필수 입력 값입니다.";
-
+        if(formState.values.nickname == '') {
+            errorState.setError("nickname", "닉네임은 필수 입력 값입니다.");
+        }
         // 성명
-        newErrors.username = formData.username ? "" : "성명은 필수 입력 값입니다.";
+        if(formState.values.username == '') {
+            errorState.setError("username", "성명은 필수 입력 값입니다.");
+        }
 
         // 생년월일
-        newErrors.birthDate = formData.birthDate ? "" : "생년월일은 필수 입력 값입니다.";
+        if(formState.values.birthDate == '') {
+            errorState.setError("birthDate", "생년월일은 필수 입력 값입니다.");
+        }
 
         // 아이디
-        newErrors.id = formData.id ? "" : "아이디는 필수 입력 값입니다.";
+        if(formState.values.id == '') {
+            errorState.setError("id", "아이디는 필수 입력 값입니다.");
+        }
 
-        // 비밀번호
-        newErrors.password = formData.password
-            ? /^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\W)(?=\S+$).{8,20}$/.test(formData.password)
-                ? ""
-                : "비밀번호는 영문 대,소문자와 숫자, 특수기호가 포함된 8자 ~ 20자여야 합니다."
-            : "비밀번호는 필수 입력 값입니다.";
+        if(formState.values.password == '') {
+            errorState.setError("password", "비밀번호는 필수 입력 값입니다.");
+        } else if (!/^(?=.*[0-9])(?=.*[a-zA-Z])(?=.*\W)(?=\S+$).{8,20}$/.test(formState.values.password)) {
+            errorState.setError("password", "비밀번호는 영문 대,소문자와 숫자, 특수기호가 포함된 8자 ~ 20자여야 합니다.");
+        }
 
-        newErrors.passwordChk = formData.password === formData.passwordChk ? "" : "비밀번호가 일치하지 않습니다."
+        if(formState.values.password !== formState.values.passwordChk) {
+            errorState.setError("passwordChk", "비밀번호가 일치하지 않습니다.");
+        }
+
         // 이메일
-        newErrors.email = formData.email
-            ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-                ? ""
-                : "이메일 형식에 맞지 않습니다."
-            : "이메일은 필수 입력 값입니다.";
+        if(formState.values.email == '') {
+            errorState.setError("email", "이메일 필수 입력 값입니다.");
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formState.values.email)) {
+            console.log(formState.values.email);
+            errorState.setError("email", "이메일 형식에 맞지 않습니다.");
+        }
 
         // 아이디 중복확인 여부
-        newErrors.idDupChkYn = dupChkYn.id === 'Y' ? "" : "아이디 중복확인을 해주세요."
+        if(dupChkYn.id != 'Y') {
+            errorState.setError("idDupChkYn", "아이디 중복확인을 해주세요.");
+        }
 
         //닉네임 중복확인 여부
-        newErrors.nicknameDupChkYn = dupChkYn.nickname === 'Y' ? "" : "닉네임 중복확인을 해주세요."
+        if(dupChkYn.nickname != 'Y') {
+            errorState.setError("nicknameDupChkYn", "닉네임 중복확인을 해주세요.");
+        }
 
-        setErrors(newErrors);
-        return Object.values(newErrors).every((error) => error === "");
+        return Object.values(errorState.errors).every((error) => error === "");
     };
 
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
 
         if(name === 'passwordChk') {
-            if(formData.password === e.target.value) {
-                errors.passwordChk = '';
+            if(formState.values.password === e.target.value) {
+                errorState.setError("passwordChk", '');
             } else {
-                errors.passwordChk = '비밀번호가 일치하지 않습니다.';
+                errorState.setError("passwordChk", '비밀번호가 일치하지 않습니다.');
             }
+
+            formState.handleChange({
+                target: {
+                    name: "passwordChk",
+                    value: value,
+                    type: "text",
+                },
+            } as React.ChangeEvent<HTMLInputElement>);
         }
 
         if(name === 'phoneNumber') {
@@ -121,26 +157,32 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                 .replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3")
                 .substring(0, 13); // 최대 13자까지만
 
-            setFormData((prev) =>  ({
-                ...prev,
-                phoneNumber: inputPhoneNumber,
-            }));
+            formState.handleChange({
+                target: {
+                    name: "phoneNumber",
+                    value: inputPhoneNumber,
+                    type: "text",
+                },
+            } as React.ChangeEvent<HTMLInputElement>);
         }
     };
 
     const handleDateChange = (date: Date | null) => {
         if (date) {
-            const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // 로컬 시간대의 날짜 객체로 변환
+            const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000); // 로컬 시간 변환
 
-            setFormData((prev) => ({
-                ...prev,
-                birthDate: localDate
-            }));
+            formState.handleChange({
+                target: {
+                    name: "birthDate",
+                    value: localDate.toISOString(), // 문자열로 변환하여 저장
+                    type: "text" // `Date` 타입이 아닌 `text`로 처리
+                }
+            } as React.ChangeEvent<HTMLInputElement>); // 타입 단언
         }
     };
 
     const handelIdDupChk = async ()=> {
-        const userId = formData.id;
+        const userId = formState.values.id;
         if(!userId) {
             alert("아이디를 입력해주세요.");
             return;
@@ -149,7 +191,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         try {
             const response = await IdDupChk(userId);
 
-            if(!response.data) {
+            if(!response) {
                 setDupSuccessMessage((prev) =>  ({
                     ...prev,
                     id: '사용 가능한 아이디 입니다.',
@@ -184,16 +226,16 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
     };
 
     const handelNicknameDupChk = async ()=> {
-        const nickname = formData.nickname;
+        const nickname = formState.values.nickname;
         if(!nickname) {
-            alert("아이디를 입력해주세요.");
+            alert("닉네임 입력해주세요.");
             return;
         }
 
         try {
             const response =  await NicknameDupChk(nickname);
 
-            if(!response.data) {
+            if(!response) {
                 setDupSuccessMessage((prev) =>  ({
                     ...prev,
                     nickname: '사용 가능한 닉네임 입니다.',
@@ -228,12 +270,12 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
     };
 
     const handelEmailDupChk = async ()=> {
-        const email = formData.email;
+        const email = formState.values.email;
 
         try {
             const response = await EmailDupChk(email);
 
-            if(response.data) {
+            if(!response) {
                 setDupChkYn((prev) =>  ({
                     ...prev,
                     email: 'Y',
@@ -245,12 +287,12 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
     };
 
     const handelPhoneNumberDupChk = async ()=> {
-        const phoneNumber = formData.phoneNumber;
+        const phoneNumber = formState.values.phoneNumber;
 
         try {
             const response =  await PhoneNumberDupChk(phoneNumber);
 
-            if(response.data) {
+            if(!response) {
                 setDupChkYn((prev) =>  ({
                     ...prev,
                     phoneNumber: 'Y',
@@ -269,7 +311,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
 
         if (validate()) {
             // 서버로 데이터 전송
-            const response =  await UserRegiste(formData);
+            const response = await UserRegiste(formState.values as FormType);
             const [accessToken, refreshToken] = response;
 
 
@@ -309,15 +351,15 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="username" className="block font-medium text-gray-700">
                         성명
                     </label>
-                    <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                    <Input
+                        type={"text"}
+                        id={"username"}
+                        name={"username"}
+                        value={formState.values.username}
+                        onChange={formState.handleChange}
+                        className={"input-text"}
                     />
-                    {errors.username && <p className="text-red-500 text-sm">{errors.username}</p>}
+                    {errorState.errors.username && <p className="text-red-500 text-sm">{errorState.errors.username}</p>}
                 </div>
 
                 {/** 생년월일 */}
@@ -326,7 +368,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         생년월일
                     </label>
                     <DatePicker
-                        selected={formData.birthDate}
+                        selected={formState.values.birthDate ? new Date(formState.values.birthDate) : null}
                         onChange={handleDateChange}
                         dateFormat="yyyy-MM-dd"
                         maxDate={new Date()} // 오늘 이전 날짜만 선택 가능
@@ -337,7 +379,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         locale="ko"
                         className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                     />
-                    {errors.birthDate && <p className="text-red-500 text-sm">{errors.birthDate}</p>}
+                    {errorState.errors.birthDate && <p className="text-red-500 text-sm">{errorState.errors.birthDate}</p>}
                 </div>
 
                 {/** 휴대전화번호 */}
@@ -345,17 +387,16 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="phoneNumber" className="block font-medium text-gray-700">
                         휴대전화번호
                     </label>
-                    <input
-                        type="text"
-                        id="phoneNumber"
-                        name="phoneNumber"
-                        value={formData.phoneNumber}
+                    <Input
+                        type={"text"}
+                        id={"phoneNumber"}
+                        name={"phoneNumber"}
+                        value={formState.values.phoneNumber}
                         onChange={handleChange}
-                        placeholder="010-1234-5678"
+                        className={"input-text"}
                         maxLength={13}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                     />
-                    {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber}</p>}
+                    {errorState.errors.phoneNumber && <p className="text-red-500 text-sm">{errorState.errors.phoneNumber}</p>}
                 </div>
 
                 {/** 이메일 */}
@@ -363,15 +404,15 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="email" className="block font-medium text-gray-700">
                         이메일
                     </label>
-                    <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                    <Input
+                        type={"email"}
+                        id={"email"}
+                        name={"email"}
+                        value={formState.values.email}
+                        onChange={formState.handleChange}
+                        className={"input-text"}
                     />
-                    {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                    {errorState.errors.email && <p className="text-red-500 text-sm">{errorState.errors.email}</p>}
                 </div>
 
                 {/** 회원구분 */}
@@ -379,20 +420,8 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="userTp" className="block font-medium text-gray-700">
                         회원구분
                     </label>
-                    {/*<select*/}
-                    {/*    id="userTp"*/}
-                    {/*    name="userTp"*/}
-                    {/*    value={formData.userTp}*/}
-                    {/*    onChange={handleChange}*/}
-                    {/*    className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"*/}
-                    {/*>*/}
-                    {/*    <option value="{}">회원구분을 선택해주세요</option>*/}
-                    {/*    <option value="1">일반인</option>*/}
-                    {/*    <option value="2">트레이너</option>*/}
-                    {/*    <option value="3">선수</option>*/}
-                    {/*</select>*/}
-                    <SelectBox code={"001"} val={formData.userTp} changeId={"userTp"} changeState={handleChange}/>
-                    {errors.userTp && <p className="text-red-500 text-sm">{errors.userTp}</p>}
+                    <SelectBox code={"001"} val={formState.values.userTp} changeId={"userTp"} changeState={formState.handleChange}/>
+                    {errorState.errors.userTp && <p className="text-red-500 text-sm">{errorState.errors.userTp}</p>}
                 </div>
 
                 {/** 닉네임 */}
@@ -401,25 +430,21 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         닉네임
                     </label>
                     <div className="flex justify-between">
-                        <input
-                            type="text"
-                            id="nickname"
-                            name="nickname"
-                            value={formData.nickname}
-                            maxLength={15}
-                            onChange={handleChange}
-                            className="w-3/4 px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                        <Input
+                            type={"text"}
+                            id={"nickname"}
+                            name={"nickname"}
+                            value={formState.values.nickname}
+                            onChange={formState.handleChange}
+                            className={"input-text-flex"}
+                            maxLength={10}
                         />
-                        <button type="button"
-                                onClick={handelNicknameDupChk}
-                                className="text-white bg-green-500 text-md p-3 rounded-xl"
-                        >
-                            중복확인
-                        </button>
+
+                        <Button type={"button"} className="confirm-btn" onClick={handelNicknameDupChk} label={"중복확인"}/>
                     </div>
                     {dupSuccessMessage.nickname && <p className="text-blue-500 text-sm">{dupSuccessMessage.nickname}</p>}
                     {dupErrorMessage.nickname && <p className="text-red-500 text-sm">{dupErrorMessage.nickname}</p>}
-                    {errors.nickname && <p className="text-red-500 text-sm">{errors.nickname}</p>}
+                    {errorState.errors.nickname && <p className="text-red-500 text-sm">{errorState.errors.nickname}</p>}
                 </div>
 
 
@@ -429,25 +454,21 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         아이디
                     </label>
                     <div className="flex justify-between">
-                        <input
-                            type="text"
-                            id="id"
-                            name="id"
-                            value={formData.id}
-                            maxLength={15}
-                            onChange={handleChange}
-                            className="w-3/4 px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                        <Input
+                            type={"text"}
+                            id={"id"}
+                            name={"id"}
+                            value={formState.values.id}
+                            onChange={formState.handleChange}
+                            className={"input-text-flex"}
+                            maxLength={10}
+                            placeholder={'아이디'}
                         />
-                        <button type="button"
-                                onClick={handelIdDupChk}
-                                className="text-white bg-green-500 text-md p-3 rounded-xl"
-                        >
-                            중복확인
-                        </button>
+                        <Button type={"button"} className="confirm-btn" onClick={handelIdDupChk} label={"중복확인"}/>
                     </div>
                     {dupSuccessMessage.id && <p className="text-blue-500 text-sm">{dupSuccessMessage.id}</p>}
                     {dupErrorMessage.id && <p className="text-red-500 text-sm">{dupErrorMessage.id}</p>}
-                    {errors.id && <p className="text-red-500 text-sm">{errors.id}</p>}
+                    {errorState.errors.id && <p className="text-red-500 text-sm">{errorState.errors.id}</p>}
                 </div>
 
                 {/** 비밀번호 */}
@@ -455,16 +476,16 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="password" className="block font-medium text-gray-700">
                         비밀번호
                     </label>
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
+                    <Input
+                        type={"password"}
+                        id={"password"}
+                        name={"password"}
+                        value={formState.values.password}
+                        onChange={formState.handleChange}
+                        className={"input-text"}
                         maxLength={20}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
                     />
-                    {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
+                    {errorState.errors.password && <p className="text-red-500 text-sm">{errorState.errors.password}</p>}
                 </div>
 
                 {/** 비밀번호 확인*/}
@@ -472,25 +493,21 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="password" className="block font-medium text-gray-700">
                         비밀번호 확인
                     </label>
-                    <input
-                        type="password"
-                        id="passwordChk"
-                        name="passwordChk"
-                        value={formData.passwordChk}
+                    <Input
+                        type={"password"}
+                        id={"passwordChk"}
+                        name={"passwordChk"}
+                        value={formState.values.passwordChk}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                        className={"input-text"}
+                        maxLength={20}
                     />
-                    {errors.passwordChk && <p className="text-red-500 text-sm">{errors.passwordChk}</p>}
+                    {errorState.errors.passwordChk && <p className="text-red-500 text-sm">{errorState.errors.passwordChk}</p>}
                 </div>
 
 
                 {/** 제출 버튼 */}
-                <button
-                    type="submit"
-                    className="w-full bg-blue-500 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
-                >
-                    회원가입
-                </button>
+                <Button type={"submit"} className="apply-btn" label={"회원가입"}/>
             </form>
         </div>
     );

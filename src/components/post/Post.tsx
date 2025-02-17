@@ -9,6 +9,7 @@ import PostEditor from "./PostEditor";
 
 import { stateFromHTML } from "draft-js-import-html";
 import htmlToDraft from "html-to-draftjs";
+import SelectBox from "../common/SelectBox";
 
 type Mode = "view" | "edit" | "create";
 
@@ -18,6 +19,7 @@ export default function Post() {
     const location = useLocation();
     const isCreateMode = !postId; // postId가 없으면 작성(create) 모드
     const [mode, setMode] = useState<Mode>(isCreateMode ? "create" : "view");
+    const [select, setSelect] = useState("");
     const queryClient = useQueryClient(); // QueryClient 생성
 
 
@@ -33,7 +35,6 @@ export default function Post() {
 
     useEffect(() => {
         if (data) {
-            console.log(data.content);
             const blocksFromHtml = htmlToDraft(data.content);
             const { contentBlocks, entityMap } = blocksFromHtml;
             const contentState = ContentState.createFromBlockArray(contentBlocks, entityMap);
@@ -137,7 +138,9 @@ export default function Post() {
                     />
                 </label>
             </div>
-
+            <div>
+                <SelectBox code={'002'} val={'postTp'} changeState={(e) => setSelect(e.target.value)} changeId={'postTp'}/>
+            </div>
             {/* 내용 */}
             <div style={{ marginBottom: "10px" }}>
                 <label>
