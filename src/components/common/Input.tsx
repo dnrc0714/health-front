@@ -9,9 +9,10 @@ type InputProps = {
     className:string;
     maxLength?: number
     placeholder?: string
+    mode?: "view" | "edit" | "create"
 }
 
-export default function Input({type, id, name, value, onChange, className, maxLength, placeholder}:InputProps) {
+export default function Input({type, id, name, value, onChange, className, maxLength, placeholder, mode}:InputProps) {
 
     return (
         <input
@@ -23,6 +24,7 @@ export default function Input({type, id, name, value, onChange, className, maxLe
             className={className}
             maxLength={maxLength}
             placeholder={placeholder}
+            disabled={mode == 'view'}
         />
     );
 }

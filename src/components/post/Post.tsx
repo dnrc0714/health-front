@@ -1,37 +1,35 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {useLocation, useNavigate, useParams} from "react-router-dom";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import { GetPost, SavePost } from "../../services/post/PostService";
-import {ContentState, convertFromHTML, convertToRaw, EditorState} from "draft-js";
+import React, {useCallback, useEffect, useState} from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {DeletePost, GetPost, SavePost} from "../../services/post/PostService";
+import { EditorState, convertToRaw, ContentState } from "draft-js";
 import draftToHtml from "draftjs-to-html";
 import DOMPurify from "dompurify";
 import PostEditor from "./PostEditor";
-
-import { stateFromHTML } from "draft-js-import-html";
 import htmlToDraft from "html-to-draftjs";
 import SelectBox from "../common/SelectBox";
-
-type Mode = "view" | "edit" | "create";
+import usePost from "../../hooks/usePost";
+import Input from "../common/Input";
+import Button from "../common/button/Button";
+import {jwtDecode} from "jwt-decode";
+import {UserType} from "../../types/userType";
 
 export default function Post() {
     const navigate = useNavigate();
-    const { postId } = useParams<{ postId?: string }>(); // URL에서 postId 가져오기
+    const { postId } = useParams<{ postId?: string }>();
     const location = useLocation();
-    const isCreateMode = !postId; // postId가 없으면 작성(create) 모드
-    const [mode, setMode] = useState<Mode>(isCreateMode ? "create" : "view");
-    const [select, setSelect] = useState("");
-    const queryClient = useQueryClient(); // QueryClient 생성
+    const queryClient = useQueryClient();
+    const [loginUser, setLoginUser] = useState<UserType | null>(null);
 
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["post", postId],
         queryFn: () => GetPost(Number(postId)),
-        enabled: !!postId, // postId가 있을 때만 실행
+        enabled: !!postId,
     });
 
-    const [title, setTitle] = useState("");
-    const [file, setFile] = useState<File | null>(null);
-    const [editorState, setEditorState] = useState(() => EditorState.createEmpty());
+
+    const { values, handleChange, setFieldValue } = usePost({ postId });
 
     useEffect(() => {
         if (data) {
@@ -39,34 +37,38 @@ export default function Post() {
             const { contentBlocks, entityMap } = blocksFromHtml;
             const contentState = ContentState.createFromBlockArray(contentBlocks, entityMap);
             const editorState = EditorState.createWithContent(contentState);
+            const refreshToken = localStorage.getItem("refreshToken");
 
-            setTitle(data.title);
-            setEditorState(editorState); // WYSIWYG Editor는 HTML 데이터를 상태로 변환하는 로직 필요
+            if(refreshToken) {
+                const decodedToken: UserType = jwtDecode(refreshToken);
+                setLoginUser({
+                    sub: decodedToken.sub,
+                    userId: decodedToken.userId,
+                    id: decodedToken.id,
+                    nickName: decodedToken.nickName,
+                    username: decodedToken.username,
+                    role: decodedToken.role,
+                    exp: decodedToken.exp,
+                    iat: decodedToken.iat
+                });
+            }
+
+            setFieldValue("title", data.title);
+            setFieldValue("postTp", data?.postTp);
+            setFieldValue("editorState", editorState);
         }
-     }, [data]);
-
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
-        }
-    };
-
-    const handleEditorStateChange = (newState: EditorState) => {
-        setEditorState(newState);
-    };
+    }, [data]);
 
     const saveMutation = useMutation({
-        mutationFn: async (formData: FormData) => {
-            return SavePost(formData);
-        },
+        mutationFn: async (formData: FormData) => SavePost(formData),
         onSuccess: async (data) => {
             alert("게시글이 성공적으로 저장되었습니다.");
-            if(postId) {
+            if (postId) {
                 await queryClient.invalidateQueries({ queryKey: ["post", String(postId)] });
             } else {
                 navigate(`/post/${data.postId}`);
             }
-            setMode("view");
+            setFieldValue("mode", "view");
         },
         onError: () => {
             alert("게시글 저장에 실패했습니다.");
@@ -74,10 +76,10 @@ export default function Post() {
     });
 
     const handleSubmit = useCallback(async () => {
-        const contentState = editorState.getCurrentContent().hasText();
-        const content = editorState.getCurrentContent();
+        const contentState = values.editorState.getCurrentContent().hasText();
+        const content = values.editorState.getCurrentContent();
 
-        if (!title.trim()) {
+        if (!values.title.trim()) {
             alert("제목을 입력해주세요.");
             return;
         }
@@ -91,22 +93,52 @@ export default function Post() {
         const refreshToken = localStorage.getItem("refreshToken");
 
         const formData = new FormData();
-        if(postId) {
+        if (postId) {
             formData.append("postId", postId);
         }
-        formData.append("title", title);
+        formData.append("title", values.title);
         formData.append("content", htmlContent);
+        formData.append("postTp", values.postTp);
         formData.append("state", location.state?.status || "published");
 
         if (refreshToken) {
             formData.append("refreshToken", refreshToken);
         }
-        if (file) {
-            formData.append("file", file);
+        if (values.file) {
+            formData.append("file", values.file);
         }
 
         saveMutation.mutate(formData);
-    }, [title, editorState, file]);
+    }, [values]);
+
+    const handleCancel = () => {
+        if(location.state?.status == 'new') {
+            navigate('/post/');
+        } else {
+            setFieldValue("mode", "view");
+        }
+
+    }
+
+    const deleteMutation = useMutation({
+        mutationFn: async (postId:number)=> DeletePost(postId),
+        onSuccess: async (data) => {
+            if(data) {
+                alert("게시글이 삭제 되었습니다.");
+                navigate('/post/');
+            }
+        }
+    });
+
+    const handleDelete= () => {
+        if(!postId) return;
+
+        const confirmDelete = window.confirm("게시글을 삭제하시겠습니까?");
+
+        if(confirmDelete) {
+            deleteMutation.mutate(Number(postId));
+        }
+    }
 
     if (isLoading) return <p>Loading...</p>;
     if (error) return <p>게시글을 불러오는데 실패했습니다.</p>;
@@ -114,39 +146,38 @@ export default function Post() {
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
             <h1 className="text-center font-bold text-3xl mb-2.5">
-                {mode === "create" ? "게시글 작성" : "게시글 상세"}
+                {values.mode === "create" ? "게시글 작성" : "게시글 상세"}
             </h1>
 
             {/* 제목 */}
             <div style={{ marginBottom: "10px" }}>
                 <label>
                     <strong>제목:</strong>
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        disabled={mode === "view"}
-                        style={{
-                            width: "100%",
-                            padding: "10px",
-                            fontSize: "16px",
-                            marginTop: "5px",
-                            boxSizing: "border-box",
-                            backgroundColor: mode === "view" ? "#f0f0f0" : "white",
-                        }}
-                        placeholder="제목을 입력하세요"
-                    />
+                    <Input type={'text'} id={'title'} name={'title'} value={values.title} onChange={handleChange} className={'input-text'} placeholder={'제목을 입력하세요.'} maxLength={20} mode={values.mode}/>
                 </label>
             </div>
+
+            {/* 구분 */}
             <div>
-                <SelectBox code={'002'} val={'postTp'} changeState={(e) => setSelect(e.target.value)} changeId={'postTp'}/>
+                <label>
+                    <strong>구분:</strong>
+                </label>
+                <SelectBox
+                    code={'002'}
+                    val={values.postTp}
+                    changeState={(e) => setFieldValue("postTp", e.target.value)}
+                    changeId={'postTp'}
+                    mode={values.mode}
+                    postTp={location.state?.postTp}
+                />
             </div>
+
             {/* 내용 */}
             <div style={{ marginBottom: "10px" }}>
                 <label>
                     <strong>내용:</strong>
                 </label>
-                {mode === "view" ? (
+                {values.mode === "view" ? (
                     <div
                         className="w-full items-center"
                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(data?.content || "") }}
@@ -157,7 +188,10 @@ export default function Post() {
                         }}
                     />
                 ) : (
-                    <PostEditor editorState={editorState} onEditorStateChange={handleEditorStateChange} />
+                    <PostEditor
+                        editorState={values.editorState}
+                        onEditorStateChange={(editorState) => setFieldValue("editorState", editorState)}
+                    />
                 )}
             </div>
 
@@ -165,44 +199,34 @@ export default function Post() {
             <div style={{ marginBottom: "20px" }}>
                 <label>
                     <strong>첨부파일:</strong>
-                    <input type="file" onChange={handleFileChange} disabled={mode === "view"} />
+                    <input
+                        type="file"
+                        name="file"
+                        onChange={(e) => setFieldValue("file", e.target.files?.[0] || null)}
+                        disabled={values.mode === "view"}
+                    />
                 </label>
             </div>
 
             {/* 버튼 */}
-            <div style={{ textAlign: "right" }}>
-                {mode === "view" ? (
-                    <button
-                        onClick={() => setMode("edit")}
-                        style={{
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                            backgroundColor: "green",
-                            color: "white",
-                            border: "none",
-                            cursor: "pointer",
-                            borderRadius: "5px",
-                        }}
-                    >
-                        수정
-                    </button>
-                ) : (
-                    <button
-                        onClick={handleSubmit}
-                        style={{
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                            backgroundColor: "blue",
-                            color: "white",
-                            border: "none",
-                            cursor: "pointer",
-                            borderRadius: "5px",
-                        }}
-                    >
-                        저장
-                    </button>
-                )}
-            </div>
+            { data?.creatorId == loginUser?.userId &&
+                (
+                    <div style={{ textAlign: "right" }}>
+                        {values.mode === "view" ? (
+                            <div className="flex justify-end gap-2">
+                                <Button label={"수정"} type={"button"} onClick={() => setFieldValue("mode", "edit")} className={'edit-btn'}/>
+                                <Button label={"삭제"} type={"button"} onClick={handleDelete} className={'delete-btn'}/>
+                            </div>
+                        ) : (
+                            <div className="flex justify-end gap-2">
+                                <Button label={"취소"} type={"button"} onClick={handleCancel} className={'edit-btn'}/>
+                                <Button label={"저장"} type={"button"} className={'apply-btn-flex'} onClick={handleSubmit}/>
+                                <Button label={"삭제"} type={"button"} onClick={handleDelete} className={'delete-btn'}/>
+                            </div>
+                        )}
+                    </div>
+                )
+            }
         </div>
     );
 }

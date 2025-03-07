@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {LoginUser} from "../../services/auth/AuthService";
 import useForm from "../../hooks/useForm";
-import Button from "../common/Button";
+import Button from "../common/button/Button";
 import Input from "../common/Input";
 
 

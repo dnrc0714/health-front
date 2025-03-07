@@ -13,9 +13,9 @@ export const SavePost = async (formData: FormData)=> {
         throw error;
     }
 }
-export const GetPostList = async () => {
+export const GetPostList = async (postTp:string) => {
     try {
-        const response = await axios.post('post/list');
+        const response = await axios.get(`post/list?postTp=${postTp}`);
 
         return response.data;
     } catch (error) {
@@ -35,7 +35,7 @@ export const GetPost = async (postId:number) => {
 
 export const DeletePost = async (postId:number) => {
     try {
-        const response = await axios.post('post/delete', {postId});
+        const response = await axios.post(`post/delete?postId=${postId}`);
 
         return response.data;
     } catch (error) {

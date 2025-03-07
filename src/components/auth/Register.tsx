@@ -7,7 +7,7 @@ import {EmailDupChk, IdDupChk, NicknameDupChk, PhoneNumberDupChk, UserRegiste} f
 import SelectBox from "../common/SelectBox";
 import useForm from "../../hooks/useForm";
 import useErrors from "../../hooks/useErrors";
-import Button from "../common/Button";
+import Button from "../common/button/Button";
 import Input from "../common/Input";
 
 
@@ -111,7 +111,6 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         if(formState.values.email == '') {
             errorState.setError("email", "이메일 필수 입력 값입니다.");
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formState.values.email)) {
-            console.log(formState.values.email);
             errorState.setError("email", "이메일 형식에 맞지 않습니다.");
         }
 
@@ -440,7 +439,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                             maxLength={10}
                         />
 
-                        <Button type={"button"} className="confirm-btn" onClick={handelNicknameDupChk} label={"중복확인"}/>
+                        <Button type={"button"} className="confirm-btn-flex" onClick={handelNicknameDupChk} label={"중복확인"}/>
                     </div>
                     {dupSuccessMessage.nickname && <p className="text-blue-500 text-sm">{dupSuccessMessage.nickname}</p>}
                     {dupErrorMessage.nickname && <p className="text-red-500 text-sm">{dupErrorMessage.nickname}</p>}
@@ -464,7 +463,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                             maxLength={10}
                             placeholder={'아이디'}
                         />
-                        <Button type={"button"} className="confirm-btn" onClick={handelIdDupChk} label={"중복확인"}/>
+                        <Button type={"button"} className="confirm-btn-flex" onClick={handelIdDupChk} label={"중복확인"}/>
                     </div>
                     {dupSuccessMessage.id && <p className="text-blue-500 text-sm">{dupSuccessMessage.id}</p>}
                     {dupErrorMessage.id && <p className="text-red-500 text-sm">{dupErrorMessage.id}</p>}

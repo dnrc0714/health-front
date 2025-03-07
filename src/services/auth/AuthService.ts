@@ -28,6 +28,28 @@ export const LogoutUser = async (refreshToken:string) => {
     }
 }
 
+export const LoginUserInfo = async (refreshToken:string) => {
+    const apiClient = axios.create({
+        baseURL: "http://localhost:8080/api",
+        headers: { "Content-Type": "application/json" },
+    });
+    try {
+        const response = await axios.post(
+            'auth/login-user-info',
+            {}, // 빈 요청 본문
+            {
+                headers: {
+                    Authorization: `Bearer ${refreshToken}`, // Authorization 헤더에 refreshToken 추가
+                },
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
 export const UserRegiste = async (formData: {
     userTp: string;
     username: string;

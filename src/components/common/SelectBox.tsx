@@ -8,10 +8,11 @@ type SelectBoxProps = {
     val:string;
     changeState: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     changeId:string
+    mode?: "view" | "edit" | "create"
+    postTp?: string
 }
 
-export default function SelectBox({code, changeId, changeState, val}:SelectBoxProps) {
-    // TB: cmm_code > sys_code, changeId: selectBox id, changeState: change handler
+export default function SelectBox({code, changeId, changeState, val, mode, postTp}:SelectBoxProps) {
     const {data, error} = useQuery({
         queryKey: ['sysCode', code],
         queryFn: () => CmmCode(code),
@@ -21,7 +22,7 @@ export default function SelectBox({code, changeId, changeState, val}:SelectBoxPr
     useEffect(() => {
         if (data && data.length > 0 && !val) {
             changeState({
-                target: { name: changeId, value: data[0].code },
+                target: { name: changeId, value: postTp || data[0].code},
             } as React.ChangeEvent<HTMLSelectElement>);
         }
     }, [data, val, changeId, changeState]);
@@ -37,13 +38,16 @@ export default function SelectBox({code, changeId, changeState, val}:SelectBoxPr
                 name={changeId}
                 value={val}
                 onChange={changeState}
+                disabled={mode == 'view'}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
             >
                 {data?.map((item: { code: string; codeName: string }) => (
                      <option key={item.code} value={item.code}>
                          {item.codeName}
                      </option>
-                ))}
+                        )
+                    )
+                }
             </select>
         </div>
     );

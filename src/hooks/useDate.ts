@@ -1,4 +1,3 @@
-import React, {useState} from "react";
 import useForm from "./useForm";
 
 export default function useDate() {

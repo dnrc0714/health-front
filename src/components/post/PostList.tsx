@@ -4,33 +4,38 @@ import {GetPostList} from "../../services/post/PostService";
 import PageNavigator from "../common/PageNavigator";
 import {useQuery} from "@tanstack/react-query";
 import {formatISODate} from "../../utils/DateUtil";
+import TpButtonList from "../common/button/TpButtonList";
 
 export default function PostList() {
     const navigate = useNavigate();
+    const [selectedCode, setSelectedCode] = useState<string>("");
 
     const [currentPage, setCurrentPage] = useState(1);
     const postsPerPage = 10;
-    const {data, error, isFetching} = useQuery({
-        queryKey: ['postId'],
-        queryFn: () => GetPostList(),
+    const [currentPosts, setCurrentPosts] = useState([]);
+    const [totalPages, setTotalPages] = useState(0);
+
+    const { data, error } = useQuery({
+        queryKey: ["postId", selectedCode],
+        queryFn: () => GetPostList(selectedCode),
+        enabled: !!selectedCode, // selectedCode가 있을 때만 요청 실행
     });
 
-    if(error) {
-        return <div>게시글 목록을 불러오는 데 실패했습니다.</div>
-    }
+
+    useEffect(() => {
+        setCurrentPage(1); // 코드 변경 시 첫 페이지로 초기화
+    }, [selectedCode]);
+
+    useEffect(() => {
+        if (data) {
+            const indexOfLastPost = currentPage * postsPerPage;
+            const indexOfFirstPost = indexOfLastPost - postsPerPage;
+            setCurrentPosts(data.slice(indexOfFirstPost, indexOfLastPost));
+            setTotalPages(Math.ceil(data.length / postsPerPage));
+        }
+    }, [data, currentPage]); // currentPage가 변경될 때도 업데이트 필요
 
     // 페이지 계산
-    const indexOfLastPost = currentPage * postsPerPage;
-    const indexOfFirstPost = indexOfLastPost - postsPerPage;
-    let currentPosts;
-    let totalPages = 0;
-    if(data && data.length > 0) {
-        currentPosts = data.slice(indexOfFirstPost, indexOfLastPost);
-        totalPages = Math.ceil(data.length / postsPerPage);
-    }
-
-
-
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
@@ -38,27 +43,29 @@ export default function PostList() {
     const handleWritePost = () => {
         alert("글쓰기 페이지로 이동합니다.");
         navigate('/post/write', {
-            state : {status: 'new'}
+            state : {
+                    status: 'new',
+                    postTp : selectedCode
+                    },
+
         });
     };
 
+    if(error) {
+        return <div>게시글 목록을 불러오는 데 실패했습니다.</div>
+    }
     return (
-        <div className="max-w-4xl mx-auto mt-8 p-4">
+        <div className="max-w-4xl mx-auto mt-8 p-4 gap-2">
             {/* 헤더 */}
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">게시판</h1>
-                {
-                    localStorage.getItem("refreshToken")
-                    && <button
-                        onClick={handleWritePost}
-                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                        >
-                            글쓰기
-                        </button>
-                }
+            <div className="flex justify-center items-center mb-6">
+                <h1 className="text-2xl font-bold">커뮤니티</h1>
             </div>
-
-             게시글 목록
+            <div className="mb-4">
+                <TpButtonList
+                    code={'002'}
+                    onSelect={setSelectedCode}
+                />
+            </div>
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 {currentPosts?.map((post: {postId:string, title:string, creatorId:string, updatedAt:string, creator:{nickname:string}}) => (
                     <div
@@ -82,6 +89,17 @@ export default function PostList() {
 
             {/* 페이지네이션 */}
             <PageNavigator currentPage={currentPage} totalPage={totalPages} handlePageChange={handlePageChange}/>
+            <div className="flex justify-end">
+                {
+                    localStorage.getItem("refreshToken")
+                    && <button
+                        onClick={handleWritePost}
+                        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                        글쓰기
+                    </button>
+                }
+            </div>
         </div>
     );
 }

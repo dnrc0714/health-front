@@ -9,7 +9,9 @@ const editorStyle = {
     width: "100%",
     minHeight: "8rem",
     border: "2px solid rgba(209, 213, 219, var(--tw-border-opacity))",
+    backgroundColor: "#fff",
 };
+
 type EditorProps = {
     editorState: EditorState;
     onEditorStateChange: (newState: EditorState) => void;
@@ -30,6 +32,12 @@ export default function PostEditor({editorState, onEditorStateChange}:EditorProp
                     textAlign: { inDropdown: true },
                     link: { inDropdown: true },
                     history: { inDropdown: false },
+                    image: {
+                        urlEnabled: true,
+                        uploadEnabled: false, // 기본 업로드 비활성화 (커스텀 핸들러 사용 예정)
+                        previewImage: true,
+                        alt: { present: true, mandatory: false },
+                    },
                 }}
                 placeholder="내용을 작성해주세요."
                 localization={{
