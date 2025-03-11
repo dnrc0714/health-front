@@ -39,7 +39,7 @@ export default function SelectBox({code, changeId, changeState, val, mode, postT
                 value={val}
                 onChange={changeState}
                 disabled={mode == 'view'}
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                className="select-box"
             >
                 {data?.map((item: { code: string; codeName: string }) => (
                      <option key={item.code} value={item.code}>

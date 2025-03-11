@@ -20,9 +20,9 @@ export default function TpButton({
             key={code}
             type={type}
             onClick={onClick}
-            className={`px-3 py-2 rounded-lg border transition duration-300 
+            className={`px-3 py-2 rounded-lg border  transition duration-300 
         ${isActive ? "bg-blue-500 text-white font-bold border-blue-700 shadow-lg"
-                : " text-gray-800 border-gray-400"}
+                : " text-gray-800 border-blue-300 bg-white"}
       `}
         >
             #{codeName}

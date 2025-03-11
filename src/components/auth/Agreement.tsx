@@ -55,7 +55,7 @@ export default function Agreement() {
 
     return (
         <div className="flex flex-col h-full max-w-md items-center justify-center mx-auto my-auto ">
-            <div className="border rounded w-full shadow-md p-10">
+            <div className="border border-blue-300 rounded w-full shadow-md p-10">
                 <h2 className="text-lg font-bold mb-4 text-center">회원가입 약관 동의</h2>
 
                 <div className="mb-4">

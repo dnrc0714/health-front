@@ -8,8 +8,9 @@ const editorStyle = {
     cursor: "pointer",
     width: "100%",
     minHeight: "8rem",
-    border: "2px solid rgba(209, 213, 219, var(--tw-border-opacity))",
-    backgroundColor: "#fff",
+    borderRadius: "5px",
+    border: "1px solid skyblue",
+    backgroundColor: "white",
 };
 
 type EditorProps = {
@@ -38,6 +39,11 @@ export default function PostEditor({editorState, onEditorStateChange}:EditorProp
                         previewImage: true,
                         alt: { present: true, mandatory: false },
                     },
+                }}
+                toolbarStyle={{
+                    borderRadius: "10px", // 툴바의 모서리를 둥글게
+                    border: "1px solid #ccc", // 테두리 추가 (선택 사항)
+                    backgroundColor: "#f8f8f8", // 배경색 변경 (선택 사항)
                 }}
                 placeholder="내용을 작성해주세요."
                 localization={{

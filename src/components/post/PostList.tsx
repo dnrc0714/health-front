@@ -33,7 +33,7 @@ export default function PostList() {
             setCurrentPosts(data.slice(indexOfFirstPost, indexOfLastPost));
             setTotalPages(Math.ceil(data.length / postsPerPage));
         }
-    }, [data, currentPage]); // currentPage가 변경될 때도 업데이트 필요
+    }, [currentPage]); // currentPage가 변경될 때도 업데이트 필요
 
     // 페이지 계산
     const handlePageChange = (page: number) => {
@@ -70,7 +70,7 @@ export default function PostList() {
                 {currentPosts?.map((post: {postId:string, title:string, creatorId:string, updatedAt:string, creator:{nickname:string}}) => (
                     <div
                         key={post.postId}
-                        className="flex justify-between items-center px-4 py-2 border-b"
+                        className="flex justify-between items-center px-4 py-2"
                     >
                         {post.postId}
                         <Link className="font-medium" to={`/post/${post.postId}`}>{post.title}</Link>
