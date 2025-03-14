@@ -27,7 +27,7 @@ export default defineConfig({
     server: {
         port: 3000,
         proxy: {
-            '/api': 'http://localhost:8081', // 백엔드 API 경로
+            '/': 'http://localhost:8081', // 백엔드 API 경로
         },
     },
     base: '/', // base 옵션 추가 (이것이 빌드된 CSS 파일의 올바른 경로를 생성합니다)

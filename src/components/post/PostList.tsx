@@ -5,10 +5,12 @@ import PageNavigator from "../common/PageNavigator";
 import {useQuery} from "@tanstack/react-query";
 import {formatISODate} from "../../utils/DateUtil";
 import TpButtonList from "../common/button/TpButtonList";
+import useCode from "../../hooks/useType";
+
 
 export default function PostList() {
+    const {selectedType}  = useCode();
     const navigate = useNavigate();
-    const [selectedCode, setSelectedCode] = useState<string>("");
 
     const [currentPage, setCurrentPage] = useState(1);
     const postsPerPage = 10;
@@ -16,15 +18,15 @@ export default function PostList() {
     const [totalPages, setTotalPages] = useState(0);
 
     const { data, error } = useQuery({
-        queryKey: ["postId", selectedCode],
-        queryFn: () => GetPostList(selectedCode),
-        enabled: !!selectedCode, // selectedCode가 있을 때만 요청 실행
+        queryKey: ["postId", selectedType?.code],
+        queryFn: () => GetPostList(selectedType!.code),
+        enabled: !!selectedType, // selectedCode가 있을 때만 요청 실행
     });
 
 
     useEffect(() => {
         setCurrentPage(1); // 코드 변경 시 첫 페이지로 초기화
-    }, [selectedCode]);
+    }, [selectedType]);
 
     useEffect(() => {
         if (data) {
@@ -33,7 +35,7 @@ export default function PostList() {
             setCurrentPosts(data.slice(indexOfFirstPost, indexOfLastPost));
             setTotalPages(Math.ceil(data.length / postsPerPage));
         }
-    }, [currentPage]); // currentPage가 변경될 때도 업데이트 필요
+    }, [data, currentPage, selectedType]); // currentPage가 변경될 때도 업데이트 필요
 
     // 페이지 계산
     const handlePageChange = (page: number) => {
@@ -45,7 +47,7 @@ export default function PostList() {
         navigate('/post/write', {
             state : {
                     status: 'new',
-                    postTp : selectedCode
+                    postTp : selectedType
                     },
 
         });
@@ -63,7 +65,6 @@ export default function PostList() {
             <div className="mb-4">
                 <TpButtonList
                     code={'002'}
-                    onSelect={setSelectedCode}
                 />
             </div>
             <div className="bg-white shadow-md rounded-lg overflow-hidden">

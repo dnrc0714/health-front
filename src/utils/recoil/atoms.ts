@@ -1,12 +1,12 @@
 import { atom } from "recoil";
-import {UserType} from "../../types/codeType";
+import {CodeType} from "../../types/codeType";
 
 export const authState = atom({
     key: "authState",
     default: false
 });
 
-export const typeState = atom<UserType | null>({
+export const typeState = atom<CodeType | null>({
     key: "typeState",
     default: null
 });
