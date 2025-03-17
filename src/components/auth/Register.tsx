@@ -437,6 +437,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                             onChange={formState.handleChange}
                             className={"input-text-flex"}
                             maxLength={10}
+                            placeholder={'닉네임'}
                         />
 
                         <Button type={"button"} className="confirm-btn-flex" onClick={handelNicknameDupChk} label={"중복확인"}/>

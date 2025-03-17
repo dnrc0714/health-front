@@ -8,6 +8,7 @@
     "@material-tailwind/react": "^2.1.10",
     "@mui/icons-material": "^6.3.1",
     "@mui/material": "^6.3.1",
+    "@stomp/stompjs": "^7.0.1",
     "@tailwindcss/cli": "^4.0.11",
     "@tailwindcss/postcss": "^4.0.11",
     "@tanstack/react-query": "^5.64.2",
@@ -38,17 +39,20 @@
     "react-daum-postcode": "^3.2.0",
     "react-dom": "^18.3.1",
     "react-draft-wysiwyg": "^1.15.0",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.1",
     "recoil": "^0.7.7",
     "tailwindcss": "^4.0.11",
     "typescript": "^4.9.5",
+    "vite-plugin-pwa": "^0.21.1",
     "web-vitals": "^2.1.3"
   },
   "scripts": {
-    "dev": "cross-env NODE_ENV=development vite",
-    "build": "cross-env NODE_ENV=production vite build",
-    "preview": "vite preview"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "watch": "npx nodemon -e js,ts,tsx,css,html --exec \"npx vite build\""
   },
   "browserslist": {
     "production": [
@@ -70,10 +74,10 @@
     "@types/react-draft-wysiwyg": "^1.13.8",
     "@vitejs/plugin-react": "^4.3.4",
     "cross-env": "^7.0.3",
+    "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
-    "vite": "^6.2.1"
+    "vite": "^6.2.2"
   },
-  "proxy": "http://localhost:8081",
   "rules": {
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": "warn",

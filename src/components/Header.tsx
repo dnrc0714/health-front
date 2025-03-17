@@ -1,10 +1,10 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
-import axios, {AxiosError} from "axios";
+import {AxiosError} from "axios";
 import {useResetRecoilState} from "recoil";
 import {authState} from "../utils/recoil/atoms";
 import {IconButton, Tooltip} from "@mui/material";
-import {AccountCircle, CalendarMonth, Forum, Login, Logout} from "@mui/icons-material";
+import {AccountCircle, Article, CalendarMonth, ChatBubble, Forum, Login, Logout} from "@mui/icons-material";
 import Sidebar from "./Sidebar";
 import MenuIcon from "@mui/icons-material/Menu";
 import {LogoutUser} from "../services/auth/AuthService";
@@ -75,15 +75,16 @@ export default function Header() {
                     </div>
                 </div>
 
-                {/* 게시판 버튼 */}
+
                 <div className="hidden md:flex">
+                    {/* 게시판 버튼 */}
                     <Tooltip title="게시판" arrow>
                         <IconButton
                             color="default"
                             sx={{ fontSize: '2rem' }}
                             onClick={() => handleNavigate('/post')}
                         >
-                            <Forum sx={{ fontSize: 'inherit' }}/>
+                            <Article sx={{ fontSize: 'inherit' }}/>
                         </IconButton>
                     </Tooltip>
 
@@ -95,6 +96,17 @@ export default function Header() {
                             onClick={() => handleNavigate('/schedule')}
                         >
                             <CalendarMonth sx={{ fontSize: 'inherit' }}/>
+                        </IconButton>
+                    </Tooltip>
+
+                    {/* 메세지 버튼 */}
+                    <Tooltip title="메세지" arrow>
+                        <IconButton
+                            color="default"
+                            sx={{ fontSize: '2rem' }}
+                            onClick={() => handleNavigate('/rooms')}
+                        >
+                            <Forum sx={{ fontSize: 'inherit' }}/>
                         </IconButton>
                     </Tooltip>
                 </div>

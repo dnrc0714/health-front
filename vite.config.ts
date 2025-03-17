@@ -1,15 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import * as path from 'path';
 
 export default defineConfig({
     root: './', // index.html 위치 기준
     plugins: [
         react(),
+        VitePWA({
+            workbox: {
+                cleanupOutdatedCaches: false,
+                sourcemap: true,
+                maximumFileSizeToCacheInBytes: 7000000,
+            }
+        })
     ],
-    define: {
-        'global': {},
-    },
     build: {
         outDir: 'dist', // 빌드 후 결과물 폴더
         emptyOutDir: true, // 빌드 시 기존 파일 삭제
@@ -28,6 +33,12 @@ export default defineConfig({
         port: 3000,
         proxy: {
             '/': 'http://localhost:8081', // 백엔드 API 경로
+        },
+        watch: {
+            ignored: ['!**/src/**'],
+        },
+        fs: {
+            strict: false,
         },
     },
     base: '/', // base 옵션 추가 (이것이 빌드된 CSS 파일의 올바른 경로를 생성합니다)

@@ -12,10 +12,13 @@ import PostListPage from "./pages/post/PostListPage";
 import Footer from "./components/Footer";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import PostPage from "./pages/post/PostPage";
+import CharRoomPage from "./pages/chat/room";
+import ChatMessagePage from "./pages/chat/message";
 
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useRecoilState<boolean>(authState);
+    console.log(11111);
     const queryClient = new QueryClient();
     return (
         <QueryClientProvider client={queryClient}>
@@ -33,6 +36,8 @@ export default function App() {
                             <Route path="/post/:postId" element={<PostPage/>}/>
                             <Route path="/register" element={<RegisterPage setIsLoggedIn={setIsLoggedIn}/>}/>
                             <Route path="/agreement" element={<AgreementPage/>}/>
+                            <Route path="/rooms" element={<CharRoomPage/>}/>
+                            <Route path="/rooms/:roomId" element={<ChatMessagePage/>}/>
                         </Routes>
                     </div>
                     <div className="h-14">
