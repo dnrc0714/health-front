@@ -34,7 +34,7 @@ export default function ChatMessageList({messagesEndRef, messages, fetchMessages
                 >
                     {messages.map((msg, idx) => (
                         <div key={msg.id}>
-                            {msg.id}=={msg.writer}: {msg.content}
+                            {msg.writer}: {msg.content}
                         </div>
                     ))}
                 </InfiniteScroll>

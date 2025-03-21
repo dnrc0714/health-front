@@ -16,7 +16,7 @@ export default defineConfig({
         })
     ],
     build: {
-        outDir: 'dist', // 빌드 후 결과물 폴더
+        outDir: '../resources/static', // 빌드 후 결과물 폴더
         emptyOutDir: true, // 빌드 시 기존 파일 삭제
         rollupOptions: {
             input: './index.html', // 빌드할 HTML 파일

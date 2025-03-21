@@ -18,7 +18,6 @@ import ChatMessagePage from "./pages/chat/message";
 
 export default function App() {
     const [isLoggedIn, setIsLoggedIn] = useRecoilState<boolean>(authState);
-    console.log(11111);
     const queryClient = new QueryClient();
     return (
         <QueryClientProvider client={queryClient}>
