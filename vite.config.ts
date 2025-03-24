@@ -4,9 +4,14 @@ import { VitePWA } from 'vite-plugin-pwa';
 import * as path from 'path';
 
 export default defineConfig({
+    define: {
+        'global': 'globalThis',
+    },
     root: './', // index.html 위치 기준
     plugins: [
-        react(),
+        react({
+            include: "**/*.tsx"
+        }),
         VitePWA({
             workbox: {
                 cleanupOutdatedCaches: false,
@@ -16,7 +21,7 @@ export default defineConfig({
         })
     ],
     build: {
-        outDir: '../resources/static', // 빌드 후 결과물 폴더
+        outDir: '../../../build/resources/main/static',// '../resources/main/static', // 빌드 후 결과물 폴더 //
         emptyOutDir: true, // 빌드 시 기존 파일 삭제
         rollupOptions: {
             input: './index.html', // 빌드할 HTML 파일
@@ -31,14 +36,25 @@ export default defineConfig({
     },
     server: {
         port: 3000,
+        host: true,
         proxy: {
-            '/': 'http://localhost:8081', // 백엔드 API 경로
+            "/ws-stomp": {
+                target: "http://localhost:8081",
+                changeOrigin: true,
+                ws: true, // WebSocket 활성화
+            }
         },
         watch: {
-            ignored: ['!**/src/**'],
+            ignored: ['node_modules/**', 'public/**'],
+            usePolling: true
         },
         fs: {
             strict: false,
+        },
+        hmr: {
+            overlay: true, // 에러 발생 시 브라우저 화면에 오류 표시
+            clientPort: 3000, // 프록시 사용 시 필요
+            protocol: 'ws', // 웹소켓 강제 사용
         },
     },
     base: '/', // base 옵션 추가 (이것이 빌드된 CSS 파일의 올바른 경로를 생성합니다)

@@ -52,6 +52,7 @@ export default function ChatMessagePage() {
         webSocketFactory: () => socket,
         reconnectDelay: 5000,
         onConnect: () => {
+            console.log(import.meta.env.VITE_WEBSOCKET_URL + "연결 성공");
             client.subscribe(
                 `/topic/public/rooms/${roomId}`,
                 (message: IMessage) => {
@@ -105,10 +106,11 @@ export default function ChatMessagePage() {
     const sendMessage = () => {
         if (stompClient && newMessage) {
             const chatMessage: ChatMessageRequest = {
-                from: writer,
+                from: localStorage.getItem("refreshToken") as string,
                 text: newMessage,
                 roomId: parseInt(roomId || ""),
             };
+            console.log(chatMessage);
             stompClient.publish({
                 destination: `/pub/chat/rooms/${roomId}/send`,
                 body: JSON.stringify(chatMessage),
