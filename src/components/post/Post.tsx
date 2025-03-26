@@ -13,6 +13,7 @@ import Input from "../common/Input";
 import Button from "../common/button/Button";
 import {jwtDecode} from "jwt-decode";
 import {UserType} from "../../types/userType";
+import {getLoggedUser} from "../../utils/JwtUtil";
 
 export default function Post() {
     const navigate = useNavigate();
@@ -20,6 +21,7 @@ export default function Post() {
     const location = useLocation();
     const queryClient = useQueryClient();
     const [loginUser, setLoginUser] = useState<UserType | null>(null);
+    const [disabled, setDisabled] = useState<Boolean>(false);
 
 
     const { data, isLoading, error } = useQuery({
@@ -37,25 +39,18 @@ export default function Post() {
             const { contentBlocks, entityMap } = blocksFromHtml;
             const contentState = ContentState.createFromBlockArray(contentBlocks, entityMap);
             const editorState = EditorState.createWithContent(contentState);
-            const refreshToken = localStorage.getItem("refreshToken");
+            const refreshToken = localStorage.getItem("refreshToken") as string;
 
-            if(refreshToken) {
-                const decodedToken: UserType = jwtDecode(refreshToken);
-                setLoginUser({
-                    sub: decodedToken.sub,
-                    userId: decodedToken.userId,
-                    id: decodedToken.id,
-                    nickName: decodedToken.nickName,
-                    username: decodedToken.username,
-                    role: decodedToken.role,
-                    exp: decodedToken.exp,
-                    iat: decodedToken.iat
-                });
+            const decodedToken = getLoggedUser(refreshToken);
+            if(decodedToken !== undefined) {
+                setLoginUser(decodedToken);
             }
 
             setFieldValue("title", data.title);
             setFieldValue("postTp", data?.postTp);
             setFieldValue("editorState", editorState);
+        } else {
+            setDisabled(false);
         }
     }, [data]);
 
@@ -68,6 +63,7 @@ export default function Post() {
             } else {
                 navigate(`/post/${data.postId}`);
             }
+            setDisabled(true);
             setFieldValue("mode", "view");
         },
         onError: () => {
@@ -116,6 +112,7 @@ export default function Post() {
             navigate('/post/');
         } else {
             setFieldValue("mode", "view");
+            setDisabled(true);
         }
 
     }
@@ -214,7 +211,7 @@ export default function Post() {
                     <div style={{ textAlign: "right" }}>
                         {values.mode === "view" ? (
                             <div className="flex justify-end gap-2">
-                                <Button label={"수정"} type={"button"} onClick={() => setFieldValue("mode", "edit")} className={'edit-btn'}/>
+                                <Button label={"수정"} type={"button"} onClick={() => {setFieldValue("mode", "edit"); setDisabled(true)}} className={'edit-btn'}/>
                                 <Button label={"삭제"} type={"button"} onClick={handleDelete} className={'delete-btn'}/>
                             </div>
                         ) : (

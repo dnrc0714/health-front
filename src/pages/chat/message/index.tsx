@@ -1,44 +1,78 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import "./ChatComponent.css";
 import React from "react";
 import ChatMessageList from "../../../components/chat/message";
 import {getMessageList} from "../../../services/chat/MessageService";
+import {ChatMessageType} from "../../../types/chatMessageType";
+import {UserType} from "../../../types/userType";
+import {getLoggedUser} from "../../../utils/JwtUtil";
 
 interface ChatMessageRequest {
     from: string;
-    text: string;
+    content: string | File | File[] | null;
     roomId: number;
-}
-interface ChatMessageResponse {
-    id: number;
-    content: string;
-    writer: string;
+    type: string;
 }
 
 export default function ChatMessagePage() {
     const { roomId } = useParams();
     const [loading, setLoading] = useState(true);
     const [stompClient, setStompClient] = useState<Client | null>(null);
-    const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
-    const [writer, setWriter] = useState<string>("");
+    const [messages, setMessages] = useState<ChatMessageType[]>([]);
     const [newMessage, setNewMessage] = useState<string>("");
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [hasMore, setHasMore] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const [isAutoScroll, setIsAutoScroll] = useState(true);
+    const [loginUser, setLoginUser] = useState<UserType | null>(null);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [otherFile, setOtherFile] = useState<File | null>(null);
+    const [previews, setPreviews] = useState<string[]>([]);
+    const [disabled, setDisabled] = useState<boolean>();
+
+    // 사용자가 수동으로 스크롤을 올렸는지 감지
+    const handleScroll = () => {
+        if (!messagesEndRef.current) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = messagesEndRef.current;
+        // 사용자가 최하단 근처에 있는 경우 자동 스크롤 활성화
+        setIsAutoScroll(scrollTop + clientHeight >= scrollHeight - 10);
     };
+
+    useEffect(() => {
+        if (isAutoScroll && messagesEndRef.current) {
+            messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        const div = messagesEndRef.current;
+        const refreshToken = localStorage.getItem("refreshToken") as string;
+        const decodedToken = getLoggedUser(refreshToken);
+        if(decodedToken !== undefined) {
+            setLoginUser(decodedToken);
+        }
+
+        if (div) {
+            div.addEventListener("scroll", handleScroll);
+            return () => div.removeEventListener("scroll", handleScroll);
+        }
+
+
+    }, []);
 
     // 초기 메시지 로드 함수
     const loadInitChatMessages = useCallback(async () => {
         try {
             const response = await getMessageList(roomId as string);
-            const responseMessages = response.data.data as ChatMessageResponse[];
+            const responseMessages = response.data.data as ChatMessageType[];
             setMessages(responseMessages);
             setHasMore(responseMessages.length > 0);
             setLoading(false);
@@ -52,12 +86,11 @@ export default function ChatMessagePage() {
         webSocketFactory: () => socket,
         reconnectDelay: 5000,
         onConnect: () => {
-            console.log(import.meta.env.VITE_WEBSOCKET_URL + "연결 성공");
             client.subscribe(
                 `/topic/public/rooms/${roomId}`,
                 (message: IMessage) => {
-                    const msg: ChatMessageResponse = JSON.parse(message.body);
-                    setMessages((prevMessages) => [msg, ...prevMessages]);
+                    const msg: ChatMessageType = JSON.parse(message.body);
+                    setMessages((prevMessages) => [...prevMessages, msg]);
                 }
             );
         },
@@ -74,8 +107,8 @@ export default function ChatMessagePage() {
                 client.subscribe(
                     `/topic/public/rooms/${roomId}`,
                     (message: IMessage) => {
-                        const msg: ChatMessageResponse = JSON.parse(message.body);
-                        setMessages((prevMessages) => [msg, ...prevMessages]);
+                        const msg: ChatMessageType = JSON.parse(message.body);
+                        setMessages((prevMessages) => [...prevMessages, msg]);
                     }
                 );
             },
@@ -92,11 +125,10 @@ export default function ChatMessagePage() {
     const fetchMessages = async () => {
         try {
             const response = await getMessageList(roomId as string);
-            const responseMessages = response.data.data as ChatMessageResponse[];
+            const responseMessages = response.data.data as ChatMessageType[];
             setMessages((prevMessages) => [...prevMessages, ...responseMessages]);
             setCurrentPage((prev) => prev + 1);
             setHasMore(responseMessages.length > 0);
-            scrollToBottom();
         } catch (error) {
             console.error("채팅 내역 로드 실패", error);
         }
@@ -104,18 +136,81 @@ export default function ChatMessagePage() {
 
     // 메시지 전송
     const sendMessage = () => {
-        if (stompClient && newMessage) {
+        const type = newMessage ? "001" : imageFiles ? "002" : videoFile ? "003" : otherFile ? "004" : "001";
+        const content = type == "001" ? newMessage :  type == "002" ? imageFiles :  type == "003" ? videoFile :  type == "004" ? otherFile : newMessage;
+        if (stompClient) {
             const chatMessage: ChatMessageRequest = {
                 from: localStorage.getItem("refreshToken") as string,
-                text: newMessage,
+                content: content,
                 roomId: parseInt(roomId || ""),
+                type: type
             };
-            console.log(chatMessage);
             stompClient.publish({
                 destination: `/pub/chat/rooms/${roomId}/send`,
                 body: JSON.stringify(chatMessage),
             });
-            setNewMessage(""); // 메시지 전송 후 입력 필드 초기화
+            setNewMessage("");
+            setImageFiles([]);
+            setPreviews([]);
+            setVideoFile(null);
+            setOtherFile(null);
+        }
+    };
+
+    // 파일 선택 핸들러
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files) return;
+
+        let newImages: File[] = [];
+        let newPreviews: string[] = [];
+        let newVideo: File | null = videoFile;
+        let newOther: File | null = otherFile;
+
+        for (let file of files) {
+            if (file.type.startsWith("image/")) {
+                if (imageFiles.length + newImages.length < 10) {
+                    newImages.push(file);
+                    newPreviews.push(URL.createObjectURL(file));
+                } else {
+                    alert("이미지는 10개까지 저장 가능합니다.");
+                    return;
+                }
+            } else if (file.type.startsWith("video/")) {
+                if (!newVideo) newVideo = file;
+            } else {
+                if (!newOther) newOther = file;
+            }
+        }
+
+        setImageFiles([...imageFiles, ...newImages]);
+        setPreviews([...previews, ...newPreviews]);
+        setVideoFile(newVideo);
+        setOtherFile(newOther);
+        setDisabled(true);
+    };
+
+    const handleDropdown = () => {
+        setIsDropdownOpen(!isDropdownOpen);
+        if(isDropdownOpen && (imageFiles.length > 0 && previews?.length > 0)) {
+            setPreviews([]);
+            setImageFiles([]);
+            setDisabled(true);
+        } else {
+            setDisabled(false);
+        }
+        setDisabled(false);
+    }
+
+    const handleRemoveImage = (index: number) => {
+        const updatedPreviews = previews.filter((_, i) => i !== index);
+        const updatedImages = imageFiles.filter((_, i) => i !== index);
+        setPreviews(updatedPreviews);
+        setImageFiles(updatedImages);
+
+        // 만약 previews 배열이 비어있으면 disabled를 false로 설정
+        if (updatedPreviews.length === 0 && updatedImages.length === 0) {
+            setDisabled(false);
         }
     };
 
@@ -131,11 +226,18 @@ export default function ChatMessagePage() {
                 messages={messages}
                 fetchMessages={fetchMessages}
                 hasMore={hasMore}
-                writer={writer}
                 newMessage={newMessage}
                 sendMessage={sendMessage}
-                setWriter={setWriter}
                 setNewMessage={setNewMessage}
+                loginUser={loginUser}
+                isDropdownOpen={isDropdownOpen}
+                handleDropdown={handleDropdown}
+                handleFileChange={handleFileChange}
+                previews={previews}
+                videoFile={videoFile}
+                otherFile={otherFile}
+                disabled={disabled}
+                handleRemoveImage={handleRemoveImage}
             />
         </div>
     );
