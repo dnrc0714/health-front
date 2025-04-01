@@ -26,11 +26,12 @@ interface ChatMessageListProps{
     otherFile:File | null;
     disabled?: boolean
     handleRemoveImage?: (index: number) => void;
+    handleFileUpload: () => void;
 }
 
 export default function ChatMessageList({messagesEndRef, messages, fetchMessages, hasMore, newMessage,
                                             sendMessage, setNewMessage, loginUser, isDropdownOpen, handleDropdown,
-                                            handleFileChange, previews, videoFile, otherFile, disabled, handleRemoveImage}: ChatMessageListProps) {
+                                            handleFileChange, previews, videoFile, otherFile, disabled, handleRemoveImage, handleFileUpload}: ChatMessageListProps) {
     return (
         <form
             onSubmit={(e) => {
@@ -67,7 +68,10 @@ export default function ChatMessageList({messagesEndRef, messages, fetchMessages
                 <Button label={"+"} type={"button"} className={"file-add-btn"} onClick={handleDropdown}/>
                 <Input type={"text"} id={"msg"} name={"msg"} value={newMessage} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewMessage(e.target.value)} className={"input-text"} disabled={disabled}/>
                 {/*파일 있을때, 버튼 분기처리 해야함*/}
-                <Button label={"Send"} onClick={sendMessage} className={"apply-btn-flex"}/>
+                {(previews.length > 0 || videoFile || otherFile) ?
+                    <Button label={"Send"} onClick={handleFileUpload} className={"apply-btn-flex"}/>
+                :<Button label={"Send"} onClick={sendMessage} className={"apply-btn-flex"}/>
+                }
             </div>
             {isDropdownOpen ?
                 (previews.length > 0 || videoFile || otherFile) ?
@@ -88,7 +92,6 @@ export default function ChatMessageList({messagesEndRef, messages, fetchMessages
                             {videoFile && <video src={URL.createObjectURL(videoFile)} controls className="w-40 h-40"></video>}
                             {otherFile && <p>{otherFile.name}</p>}
                         </div>
-                        {/*<button onClick={handleSendFile} className="bg-blue-500 text-white px-4 py-2 rounded">파일 전송</button>*/}
                     </div>
                 ) :
                 (

@@ -9,10 +9,14 @@ import {getMessageList} from "../../../services/chat/MessageService";
 import {ChatMessageType} from "../../../types/chatMessageType";
 import {UserType} from "../../../types/userType";
 import {getLoggedUser} from "../../../utils/JwtUtil";
+import {ChatFileType} from "../../../types/chatFileType";
+import {saveFile} from "../../../services/chat/ChatFileService";
 
 interface ChatMessageRequest {
     from: string;
-    content: string | File | File[] | null;
+    content: string;
+    files: File[] | null;
+    file: File | null;
     roomId: number;
     type: string;
 }
@@ -35,6 +39,7 @@ export default function ChatMessagePage() {
     const [videoFile, setVideoFile] = useState<File | null>(null);
     const [otherFile, setOtherFile] = useState<File | null>(null);
     const [previews, setPreviews] = useState<string[]>([]);
+    const [fileType, setFileType] = useState<string>("001");
     const [disabled, setDisabled] = useState<boolean>();
 
     // 사용자가 수동으로 스크롤을 올렸는지 감지
@@ -85,6 +90,10 @@ export default function ChatMessagePage() {
     const client = new Client({
         webSocketFactory: () => socket,
         reconnectDelay: 5000,
+        connectHeaders: {
+            // JWT 토큰이나 세션 ID 등 인증 정보 추가
+            'Authorization': `Bearer ${localStorage.getItem("refreshToken")}` // 액세스 토큰 사용
+        },
         onConnect: () => {
             client.subscribe(
                 `/topic/public/rooms/${roomId}`,
@@ -103,6 +112,10 @@ export default function ChatMessagePage() {
         const client = new Client({
             webSocketFactory: () => socket,
             reconnectDelay: 5000,
+            connectHeaders: {
+                // JWT 토큰이나 세션 ID 등 인증 정보 추가
+                'Authorization': `Bearer ${localStorage.getItem("refreshToken")}` // 액세스 토큰 사용
+            },
             onConnect: () => {
                 client.subscribe(
                     `/topic/public/rooms/${roomId}`,
@@ -136,19 +149,26 @@ export default function ChatMessagePage() {
 
     // 메시지 전송
     const sendMessage = () => {
-        const type = newMessage ? "001" : imageFiles ? "002" : videoFile ? "003" : otherFile ? "004" : "001";
-        const content = type == "001" ? newMessage :  type == "002" ? imageFiles :  type == "003" ? videoFile :  type == "004" ? otherFile : newMessage;
+
         if (stompClient) {
             const chatMessage: ChatMessageRequest = {
                 from: localStorage.getItem("refreshToken") as string,
-                content: content,
+                content: newMessage,
+                files: imageFiles,
+                file: videoFile ?? otherFile ?? null,
                 roomId: parseInt(roomId || ""),
-                type: type
+                type: fileType
             };
+
             stompClient.publish({
                 destination: `/pub/chat/rooms/${roomId}/send`,
                 body: JSON.stringify(chatMessage),
+                // 필요한 경우 추가 헤더 설정
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem("refreshToken")}`
+                }
             });
+
             setNewMessage("");
             setImageFiles([]);
             setPreviews([]);
@@ -166,9 +186,11 @@ export default function ChatMessagePage() {
         let newPreviews: string[] = [];
         let newVideo: File | null = videoFile;
         let newOther: File | null = otherFile;
+        let type = "001";
 
         for (let file of files) {
             if (file.type.startsWith("image/")) {
+                type = "002";
                 if (imageFiles.length + newImages.length < 10) {
                     newImages.push(file);
                     newPreviews.push(URL.createObjectURL(file));
@@ -177,8 +199,10 @@ export default function ChatMessagePage() {
                     return;
                 }
             } else if (file.type.startsWith("video/")) {
+                type = "003";
                 if (!newVideo) newVideo = file;
             } else {
+                type = "004";
                 if (!newOther) newOther = file;
             }
         }
@@ -187,7 +211,22 @@ export default function ChatMessagePage() {
         setPreviews([...previews, ...newPreviews]);
         setVideoFile(newVideo);
         setOtherFile(newOther);
+        setFileType(type);
         setDisabled(true);
+    };
+
+    const handleFileUpload = async () => {
+        if (stompClient) {
+            const chatFiles : ChatFileType = {
+                roomId: Number(roomId),
+                files: imageFiles,
+                file: videoFile ?? otherFile,
+                type: fileType
+            }
+
+        await saveFile(chatFiles);
+        }
+
     };
 
     const handleDropdown = () => {
@@ -233,6 +272,7 @@ export default function ChatMessagePage() {
                 isDropdownOpen={isDropdownOpen}
                 handleDropdown={handleDropdown}
                 handleFileChange={handleFileChange}
+                handleFileUpload={handleFileUpload}
                 previews={previews}
                 videoFile={videoFile}
                 otherFile={otherFile}
