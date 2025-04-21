@@ -1,8 +1,9 @@
 import axios from "axios";
+import apiClient from "../../config/axiosConfig";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as String
 export const LoginUser = async (formData: {id:string, password:string}) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/auth/signIn`, formData);
+        const response = await apiClient.post(`${API_BASE_URL}/auth/signIn`, formData);
 
         return response.data;
     } catch (error) {
@@ -12,7 +13,7 @@ export const LoginUser = async (formData: {id:string, password:string}) => {
 
 export const LogoutUser = async (refreshToken:string) => {
     try {
-        const response = await axios.post(
+        const response = await apiClient.post(
             `${API_BASE_URL}/auth/logout`,
             {}, // 빈 요청 본문
             {
@@ -46,18 +47,18 @@ export const UserRegiste = async (formData: {
             birthDate: formData.birthDate ? formData.birthDate.split('T')[0] : null,
         };
 
-        const response = await axios.post(`${API_BASE_URL}/auth/register`, requestData);
-
+        const response = await apiClient.post(`${API_BASE_URL}/auth/register`, requestData);
         return response.data;
-    } catch (error) {
-        throw error
+    } catch (error : any) {
+        alert(error.response.data.message);
+        return;
     }
 }
 
 
 export const IdDupChk = async (id: string) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/auth/idDupChk`, null, { params: { id } });
+        const response = await apiClient.post(`${API_BASE_URL}/auth/idDupChk`, null, { params: { id } });
 
         return response.data
     } catch (error) {
@@ -68,7 +69,7 @@ export const IdDupChk = async (id: string) => {
 
 export const NicknameDupChk = async (nickname: string) =>  {
     try {
-        const response = await axios.post(`${API_BASE_URL}/auth/nicknameDupChk`, null, { params: { nickname } });
+        const response = await apiClient.post(`${API_BASE_URL}/auth/nicknameDupChk`, null, { params: { nickname } });
 
         return response.data;
     } catch (error) {
@@ -80,7 +81,7 @@ export const NicknameDupChk = async (nickname: string) =>  {
 
 export const EmailDupChk= async (email: string) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/auth/emailDupChk`, null, { params: { email } });
+        const response = await apiClient.post(`${API_BASE_URL}/auth/emailDupChk`, null, { params: { email } });
 
         return response.data;
     } catch (error) {
@@ -90,7 +91,7 @@ export const EmailDupChk= async (email: string) => {
 
 export const PhoneNumberDupChk = async (phoneNumber: string) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/auth/phoneNumberDupChk`, null, { params: { phoneNumber } });
+        const response = await apiClient.post(`${API_BASE_URL}/auth/phoneNumberDupChk`, null, { params: { phoneNumber } });
 
         return response.data;
     } catch (error) {

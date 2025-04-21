@@ -1,4 +1,4 @@
-import {Ref} from "react";
+import {Ref, useEffect} from "react";
 import { motion } from "framer-motion";
 import InfiniteScroll from "react-infinite-scroll-component";
 import React from "react";
@@ -12,7 +12,7 @@ import { X } from "lucide-react"; // Lucide 아이콘 사용 (Tailwind와 잘 �
 interface ChatMessageListProps{
     messagesEndRef: Ref<HTMLDivElement>;
     messages: ChatMessageType[];
-    fetchMessages: ()=> Promise<void>;
+    fetchMessages: ()=> Promise<boolean>;
     hasMore: boolean;
     newMessage: string;
     sendMessage: () => void;
@@ -32,11 +32,17 @@ interface ChatMessageListProps{
 export default function ChatMessageList({messagesEndRef, messages, fetchMessages, hasMore, newMessage,
                                             sendMessage, setNewMessage, loginUser, isDropdownOpen, handleDropdown,
                                             handleFileChange, previews, videoFile, otherFile, disabled, handleRemoveImage, handleFileUpload}: ChatMessageListProps) {
+
+    useEffect(() => {
+        messages.map((msg) => {
+           console.log(msg.chatFile);
+            console.log(msg.content);
+        });
+    }, [messages]);
     return (
         <form
             onSubmit={(e) => {
                 e.preventDefault(); // 폼 제출 시 페이지 리로드 방지
-                // handleLogin(); //
             }}
         >
             <div id="scrollableDiv" className="p-4 bg-gray-100 rounded-lg shadow-lg h-96 overflow-y-auto" ref={messagesEndRef}>
@@ -49,19 +55,57 @@ export default function ChatMessageList({messagesEndRef, messages, fetchMessages
                     inverse={true} // 스크롤을 위로 올릴 때 데이터 로드
                     scrollableTarget="scrollableDiv"
                 >
-                    {messages.map((msg, idx) => (
-                        <div key={msg.id ?? `fallback-${idx}`} className={`flex my-2 ${msg.creator?.userId === loginUser?.userId ? "justify-end" : "justify-start"}`}>
-                            <div className="flex flex-col">
-                                <span className={`flex ${msg.creator?.userId === loginUser?.userId ? "justify-end" : "justify-start"}`}>{msg.creator?.nickname}</span>
-                                <span className={`p-2 rounded-lg max-w-xs text-white ${
-                                    msg.creator?.userId === loginUser?.userId ? "bg-blue-600" : "bg-gray-500"
-                                }`}
-                                >
-                                    {msg.content}
-                                </span>
+                    {messages.map((msg, idx) => {
+                        const files = msg.chatFile ?? []; // <-- 여기가 핵심
+
+                        return (
+                            <div
+                                key={msg.id ?? `fallback-${idx}`}
+                                className={`flex my-2 ${msg.creator?.userId === loginUser?.userId ? "justify-end" : "justify-start"}`}
+                            >
+                                <div className="flex flex-col">
+                                    <span className={`flex ${msg.creator?.userId === loginUser?.userId ? "justify-end" : "justify-start"}`}>
+                                      {msg.creator?.nickname}
+                                    </span>
+                                    {files.length > 0 ? (
+                                        files.length === 1 ? (
+                                            <div className="flex justify-end mt-3">
+                                                <img
+                                                    key={files[0].id.toString() + files[0].seq.toString()}
+                                                    src={files[0].s3Url}
+                                                    alt={files[0].fileName}
+                                                    className={`rounded-lg w-25 h-25 ${
+                                                        msg.creator?.userId === loginUser?.userId ? "bg-blue-600" : "bg-gray-500"
+                                                    }`}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-3 gap-1 mt-3">
+                                                {files.map((file) => (
+                                                    <img
+                                                        key={file.id.toString() + file.seq.toString()}
+                                                        src={file.s3Url}
+                                                        alt={file.fileName}
+                                                        className={`rounded-lg w-25 h-25 ${
+                                                            msg.creator?.userId === loginUser?.userId ? "bg-blue-600" : "bg-gray-500"
+                                                        }`}
+                                                    />
+                                                ))}
+                                            </div>
+                                        )
+                                    ) : (
+                                        <span
+                                            className={`p-2 rounded-lg max-w-xs text-white ${
+                                                msg.creator?.userId === loginUser?.userId ? "bg-blue-600" : "bg-gray-500"
+                                            }`}
+                                        >
+                                            {msg.content}
+                                          </span>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </InfiniteScroll>
             </div>
             <div className="flex mt-4 gap-1">
@@ -69,7 +113,7 @@ export default function ChatMessageList({messagesEndRef, messages, fetchMessages
                 <Input type={"text"} id={"msg"} name={"msg"} value={newMessage} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewMessage(e.target.value)} className={"input-text"} disabled={disabled}/>
                 {/*파일 있을때, 버튼 분기처리 해야함*/}
                 {(previews.length > 0 || videoFile || otherFile) ?
-                    <Button label={"Send"} onClick={handleFileUpload} className={"apply-btn-flex"}/>
+                    <Button label={"FILE"} onClick={handleFileUpload} className={"apply-btn-flex"}/>
                 :<Button label={"Send"} onClick={sendMessage} className={"apply-btn-flex"}/>
                 }
             </div>

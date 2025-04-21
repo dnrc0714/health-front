@@ -74,7 +74,6 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
     const validate = () => {
         // 회원구분
         if(formState.values.userTp == '') {
-            console.log(formState.values);
             errorState.setError("userTp", "회원구분은 필수 입력 값입니다.");
         }
 
@@ -329,12 +328,6 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         } else if (dupChkYn.nickname === 'N') {
             alert("닉네임 중복확인을 해주세요.");
             return;
-        } else if (dupChkYn.phoneNumber === 'Y') {
-            alert("이미 등록된 휴대전화번호 입니다.");
-            return;
-        } else if (dupChkYn.email === 'Y') {
-            alert("이미 등록된 이메일 입니다.");
-            return;
         } else {
             alert("입력값을 확인해주세요.");
             return;
@@ -345,10 +338,10 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
         <div className="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
             <h1 className="text-2xl font-bold mb-4 text-center">HEALTH 회원가입</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
-                {/** 성명 */}
+                {/** 이름 */}
                 <div>
                     <label htmlFor="username" className="block font-medium text-gray-700">
-                        성명
+                        이름
                     </label>
                     <Input
                         type={"text"}
@@ -357,6 +350,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         value={formState.values.username}
                         onChange={formState.handleChange}
                         className={"input-text"}
+                        placeholder={"이름 입력해주세요."}
                     />
                     {errorState.errors.username && <p className="text-red-500 text-sm">{errorState.errors.username}</p>}
                 </div>
@@ -376,7 +370,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         dropdownMode="select"
                         placeholderText="생년월일을 선택하세요"
                         locale="ko"
-                        className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-300"
+                        className={"input-text"}
                     />
                     {errorState.errors.birthDate && <p className="text-red-500 text-sm">{errorState.errors.birthDate}</p>}
                 </div>
@@ -394,6 +388,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         onChange={handleChange}
                         className={"input-text"}
                         maxLength={13}
+                        placeholder={"'-'를 제외하고 입력해주세요."}
                     />
                     {errorState.errors.phoneNumber && <p className="text-red-500 text-sm">{errorState.errors.phoneNumber}</p>}
                 </div>
@@ -403,14 +398,18 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                     <label htmlFor="email" className="block font-medium text-gray-700">
                         이메일
                     </label>
-                    <Input
-                        type={"email"}
-                        id={"email"}
-                        name={"email"}
-                        value={formState.values.email}
-                        onChange={formState.handleChange}
-                        className={"input-text"}
-                    />
+                    <div className={"flex"}>
+                        <Input
+                            type={"email"}
+                            id={"email"}
+                            name={"email"}
+                            value={formState.values.email}
+                            onChange={formState.handleChange}
+                            className={"input-text"}
+                            placeholder={"이메일을 입력해주세요."}
+
+                        />
+                    </div>
                     {errorState.errors.email && <p className="text-red-500 text-sm">{errorState.errors.email}</p>}
                 </div>
 
@@ -437,7 +436,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                             onChange={formState.handleChange}
                             className={"input-text-flex"}
                             maxLength={10}
-                            placeholder={'닉네임'}
+                            placeholder={'닉네임을 입력해주세요.'}
                         />
 
                         <Button type={"button"} className="confirm-btn-flex" onClick={handelNicknameDupChk} label={"중복확인"}/>
@@ -462,7 +461,7 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                             onChange={formState.handleChange}
                             className={"input-text-flex"}
                             maxLength={10}
-                            placeholder={'아이디'}
+                            placeholder={'아이디를 입력해주세요.'}
                         />
                         <Button type={"button"} className="confirm-btn-flex" onClick={handelIdDupChk} label={"중복확인"}/>
                     </div>
@@ -482,8 +481,9 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         name={"password"}
                         value={formState.values.password}
                         onChange={formState.handleChange}
-                        className={"input-text"}
+                        className={"input-text text-xs"}
                         maxLength={20}
+                        placeholder={'영문자(대,소문자), 숫자, 특수문자를 포함하여 최소 10자 이상 입력하세요.'}
                     />
                     {errorState.errors.password && <p className="text-red-500 text-sm">{errorState.errors.password}</p>}
                 </div>
@@ -499,8 +499,9 @@ export default function Register({ setIsLoggedIn }: { setIsLoggedIn: React.Dispa
                         name={"passwordChk"}
                         value={formState.values.passwordChk}
                         onChange={handleChange}
-                        className={"input-text"}
+                        className={"input-text text-xs"}
                         maxLength={20}
+                        placeholder={'영문자(대,소문자), 숫자, 특수문자를 포함하여 최소 10자 이상 입력하세요.'}
                     />
                     {errorState.errors.passwordChk && <p className="text-red-500 text-sm">{errorState.errors.passwordChk}</p>}
                 </div>
