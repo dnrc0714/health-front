@@ -33,12 +33,6 @@ export default function ChatMessageList({messagesEndRef, messages, fetchMessages
                                             sendMessage, setNewMessage, loginUser, isDropdownOpen, handleDropdown,
                                             handleFileChange, previews, videoFile, otherFile, disabled, handleRemoveImage, handleFileUpload}: ChatMessageListProps) {
 
-    useEffect(() => {
-        messages.map((msg) => {
-           console.log(msg.chatFile);
-            console.log(msg.content);
-        });
-    }, [messages]);
     return (
         <form
             onSubmit={(e) => {
